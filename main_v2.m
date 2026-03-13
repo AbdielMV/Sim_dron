@@ -20,6 +20,8 @@ target_y = ref_total(2, :); % Solo la componente Y para el control de posición 
 vx_target = dref_total(1, :);
 vy_target = dref_total(2, :);
 target_z = ref_total(3, :); % Solo la componente Z para el control de altura Z
+ref_roll_rhonn = zeros(1, N+2); % Referencia de roll calculada por el controlador RHONN (lazo externo)
+ref_pitch_rhonn = zeros(1, N+2); % Referencia de pitch calculada por el controlador RHONN (lazo externo)
 
 % ==========================================
 % 3. BUCLE PRINCIPAL DE SIMULACIÓN
@@ -40,7 +42,7 @@ for k = 1:N
     [xn(k+1), vxn(k+1), H_x_dynamic, Iwu_x_dynamic, Iwx_x_dynamic] = rhonn_model_x_dynamic(x(k), vx(k), ...
         ang(1,k), ang(3,k), ang(2,k), U(1,k), w1_x_dynamic(:,k), w2_x_dynamic(:,k), dt, m);
     
-    [yn(k+1), vyn(k+1), H_y_dynamic, Iwu_y_dynamic, Iwx_y_dynamic] = rhonn_model_y_dynamic(x(k), vx(k), ...
+    [yn(k+1), vyn(k+1), H_y_dynamic, Iwu_y_dynamic, Iwx_y_dynamic] = rhonn_model_y_dynamic(y(k), vy(k), ...
         ang(1,k), ang(3,k), ang(2,k), U(1,k), w1_y_dynamic(:,k), w2_y_dynamic(:,k), dt, m);
 
     [zn(k+1), vzn(k+1), H_z_dynamic, Iwu_z_dynamic, Iwx_z_dynamic] = rhonn_model_z_dynamic(z(k), vz(k), ... 

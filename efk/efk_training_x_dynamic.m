@@ -17,7 +17,7 @@ function [w1_next,w2_next,p1_next,p2_next,e1,e2] = efk_training_x_dynamic(H,z_no
     H2 = [H(3);H(4);H(5)];
 
     e_k = [x1 - x1n, x2 - x2n];
-    eta = [0.7, 0.7]; % Si cambio el learning rate también cambia las ganancias necesarias
+    eta = [0.5, 0.5]; % Si cambio el learning rate también cambia las ganancias necesarias
 
     % Capa 1
     M1 = (r1 + H1'*p1_now*H1)^-1;
