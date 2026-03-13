@@ -11,7 +11,7 @@ addpath('parameters', 'dynamics', 'control_rhonn', 'utils', 'visualization', 'ef
 run('init_system.m'); 
 
 % 2. Generación de Referencias
-[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 1);
+[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 2);
 ref_roll = ones(1,N+2)*deg2rad(0);
 ref_pitch = ones(1,N+2)*deg2rad(0);
 ref_yaw = ones(1,N+2)*deg2rad(0);
@@ -214,4 +214,4 @@ e2_ident_yaw = [e2_ident_yaw, e2_ident_yaw(end)];
 % ==========================================
 % Llamamos a un script externo para no saturar este archivo
 plot_results; % Descomentar para generar las gráficas  
-%animate_drone; % Descomentar para generar el video 3D
+animate_drone; % Descomentar para generar el video 3D

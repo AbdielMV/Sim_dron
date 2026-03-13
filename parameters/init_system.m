@@ -20,7 +20,7 @@ Inertia = [Ix, Iy, Iz]; % Vector para pasar a la función
 % 2. CONFIGURACIÓN DE SIMULACIÓN Y MASAS
 % ==========================================
 dt = 1e-3;
-Tf = 30;       % Tiempo final
+Tf = 60;       % Tiempo final
 t  = 0:dt:Tf;
 N  = numel(t) - 1;
 cuarto_tiempo = round(N / 2); % Encuentra el índice K en la mitad

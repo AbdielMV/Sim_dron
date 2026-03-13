@@ -33,5 +33,9 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_x_dynamic(x_now, v_now, phi
     alpha = (((e2k + (dt*v))*dt) - (w1(1,1)*sgm(x1k_1)) - w1(2,1) + x1dk_2 + e1k_1)*(1/w13);
 
     u_next = ((alpha - (w2(1,1)*sgm(x2k)) - (w2(2,1)*sgm(x3k)*sgm(x4k)*sgm(x5k)) - (w2(3,1)*sgm(x3k)*sgm(x4k)))*(m*1/w24));
+
+    % Limitar el esfuerzo al equivalente físico de los rotores (~30 grados de inclinación)
+    sat = 2.5; 
+    u_next = max(-sat, min(sat, u_next));
         
 end
