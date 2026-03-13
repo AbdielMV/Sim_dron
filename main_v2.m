@@ -211,5 +211,5 @@ e2_ident_yaw = [e2_ident_yaw, e2_ident_yaw(end)];
 % 4. VISUALIZACIÓN Y RESULTADOS
 % ==========================================
 % Llamamos a un script externo para no saturar este archivo
-plot_results;  
+plot_results; % Descomentar para generar las gráficas  
 %animate_drone; % Descomentar para generar el video 3D
