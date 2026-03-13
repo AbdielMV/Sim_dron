@@ -17,7 +17,7 @@ function [XN1_next, XN2_next, H, Iwu, Iwx] = rhonn_model_x_dynamic(x_now, v_now,
 
     %Update Neural States
     XN1_next = (w1'*C1) + (Iw13*x2k);
-    XN2_next = (w2'*C2) + Iw24*((u_now/m)*dt);
+    XN2_next = (w2'*C2) + Iw24*((u_now*dt)/m);
     % XN2_next = (w2'*C2) + Iw24*((u_now*dt)/m);
 
     H = [C1;C2];
