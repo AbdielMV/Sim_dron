@@ -32,6 +32,6 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_y_dynamic(y_now, v_now, phi
 
     alpha = (((e2k + (dt*v))*dt) - (w1(1,1)*sgm(x1k_1)) - w1(2,1) + x1dk_2 + e1k_1)*(1/w13);
 
-    u_next = ((alpha - (w2(1,1)*sgm(x2k)) - (w2(2,1)*sgm(x3k)*sgm(x5k)*sgm(x4k)) + (w2(3,1)*sgm(x4k)*sgm(x3k)))*(m/w24))*1;
+    u_next = ((alpha - (w2(1,1)*sgm(x2k)) - (w2(2,1)*sgm(x3k)*sgm(x5k)*sgm(x4k)) + (w2(3,1)*sgm(x4k)*sgm(x3k)))*(m/w24));
         
 end
