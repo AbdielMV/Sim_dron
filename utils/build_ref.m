@@ -17,9 +17,9 @@ function [t_ref, ref, dref, ddref] = build_ref(dt, Tf, tipo_trayectoria)
 
     switch tipo_trayectoria
         case 1 % ===== OPCIÓN: TRAYECTORIA CONSTANTE =====
-            ref(1, :) = 5.0 * ones(1, N); % Queremos ir a X = 5 metros
-            ref(2, :) = 5.0 * ones(1, N); % Queremos ir a Y = 5 metros
-            ref(3, :) = 6 + 0.5*t_ref;      % Queremos mantener Z constante
+            ref(1, :) = 20.0 * ones(1, N); % Queremos ir a X = 5 metros
+            ref(2, :) = 10.0 * ones(1, N); % Queremos ir a Y = 5 metros
+            ref(3, :) = 6 + 0.0*t_ref;      % Queremos mantener Z constante
 
             % Velocidad (Derivada numérica)
             % Calculamos la diferencia entre puntos y dividimos por dt
@@ -43,7 +43,7 @@ function [t_ref, ref, dref, ddref] = build_ref(dt, Tf, tipo_trayectoria)
 
             ref(1, :) = Radio * cos(Omega * t_ref);
             ref(2, :) = Radio * sin(Omega * t_ref);
-            ref(3, :) = 6 + 0.5*t_ref; % Referencia de Altura (Rampa)
+            ref(3, :) = 5 + 0.5*t_ref ; % Referencia de Altura (Rampa) % Código: + 0.5*t_ref
 
             % Velocidad (Derivada numérica)
             % Calculamos la diferencia entre puntos y dividimos por dt
@@ -80,7 +80,7 @@ function [t_ref, ref, dref, ddref] = build_ref(dt, Tf, tipo_trayectoria)
             den = 1 + sin(omega_lem * t_ref).^2;
             ref(1, :) = (a_lem * cos(omega_lem * t_ref)) ./ den;
             ref(2, :) = (a_lem * sin(omega_lem * t_ref) .* cos(omega_lem * t_ref)) ./ den;
-            ref(3, :) = 6 + 0.5*t_ref; % Referencia de Altura (Rampa)
+            ref(3, :) = 3 + 0.5*t_ref; % Referencia de Altura (Rampa)
 
             % Velocidad (Derivada numérica)
             % Calculamos la diferencia entre puntos y dividimos por dt

@@ -8,7 +8,9 @@ v.FrameRate = fps;
 v.Quality = 100;
 open(v);
 
+% =========================================================
 % 1. Preparar Figura y Ejes
+% =========================================================
 fig = figure('Name', 'Simulación 3D del UAV', 'Color', 'w', 'WindowState', 'maximized');
 ax = axes('Parent', fig); 
 hold(ax, 'on'); grid(ax, 'on'); 
@@ -18,25 +20,27 @@ view(ax, [45, 30]); % Ángulo isométrico
 camproj(ax, 'orthographic'); % Proyección isométrica real (sin fuga)
 % --------------------------------
 
-axis(ax, 'equal'); 
-axis(ax, 'vis3d');
-
-plot3(ax, x, y, z, 'b-', 'LineWidth', 1.5);
-
 % Límites fijos para ver toda la trayectoria desde el inicio
 margen = 2.0;
-xlim(ax, [min(x)-margen, max(x)+margen]);
-ylim(ax, [min(y)-margen, max(y)+margen]);
-zlim(ax, [min(z)-0.5, max(z)+margen]);
+% Aseguramos que los límites contemplen tanto la trayectoria real como la referencia (usando ref_total)
+xlim(ax, [min([x, ref_total(1,:)])-margen, max([x, ref_total(1,:)])+margen]);
+ylim(ax, [min([y, ref_total(2,:)])-margen, max([y, ref_total(2,:)])+margen]);
+zlim(ax, [min([z, ref_total(3,:)])-0.5, max([z, ref_total(3,:)])+margen]);
 xlabel(ax, 'X (m)'); ylabel(ax, 'Y (m)'); zlabel(ax, 'Z (m)');
 
 % Configuraciones críticas para isometría
 axis(ax, 'equal'); 
 axis(ax, 'vis3d');
 
-% Dibujar trayectoria del controlador
-plot3(ax, x, y, z, 'b-', 'LineWidth', 1.5);
-xlabel(ax, 'X (m)'); ylabel(ax, 'Y (m)'); zlabel(ax, 'Z (m)');
+% --- GRAFICAR TRAYECTORIAS ---
+% 1. Dibujar trayectoria de referencia (Línea punteada roja usando ref_total)
+plot3(ax, ref_total(1,:), ref_total(2,:), ref_total(3,:), 'r--', 'LineWidth', 1.5, 'DisplayName', 'Referencia');
+
+% 2. Dibujar trayectoria del controlador/dron (Línea sólida azul)
+plot3(ax, x, y, z, 'b-', 'LineWidth', 1.5, 'DisplayName', 'UAV Real');
+
+% Activar la leyenda
+legend(ax, 'show', 'Location', 'best');
 
 % 2. Crear los grupos de transformación jerárquica
 animeDrone          = hgtransform('Parent', ax);
@@ -104,77 +108,3 @@ for k = 1:step_anim:N
 end
 close(v);
 fprintf('¡Simulación terminada! Video guardado como %s\n', video_filename);
-
-%{
-% --- DYNAMIC VERTICAL ---
-function [z_next, vz_next, x_next, vx_next, y_next, vy_next] = translational_dynamic_u(x_now, vx_now, y_now, vy_now, z_now, vz_now, u1, m, g, dt, k_wind, angles)
-    
-    phi = angles(1);
-    theta = angles(2);
-    psi = angles(3);
-    
-    % --- DINÁMICA DE TRASLACIÓN COMPLETA ---
-    % Proyección del empuje sobre el eje Z inercial:
-    % F_vertical = u * cos(phi) * cos(theta)
-    thrust_vertical = u1 * cos(phi) * cos(theta);
-    
-    % La fricción del viento se opone a la velocidad vertical, no depende de los ángulos del cuerpo
-    friccion_z = k_wind * vz_now * abs(vz_now);
-
-    acc_x = (1/m) * (cos(phi)*cos(psi)*sin(theta) + sin(phi)*sin(psi)) * u1;
-    acc_y = (1/m) * (cos(phi)*sin(theta)*sin(psi) - cos(psi)*sin(phi)) * u1;
-    acc_z = -g + (thrust_vertical - friccion_z) / m;
-    
-    x_next = x_now + (dt*vx_now);
-    y_next = y_now + (dt*vy_now);
-    z_next = z_now + (dt*vz_now);
-    
-    vx_next = vx_now + dt * acc_x;
-    vy_next = vy_now + dt * acc_y;
-    vz_next = vz_now + dt * acc_z;
-
-end
-
-% --- ROTATIONAL DYNAMIC ---
-function [ang_next, omega_next] = rotational_dynamics(ang_now, omega_now, u_rot_now, I, dt)
-    % Desempaquetar estados actuales
-    phi   = ang_now(1);
-    theta = ang_now(2);
-    psi = ang_now(3); % No se usa explícitamente en la dinámica, solo se integra
-    
-    w_x = omega_now(1); % omega_x
-    w_y = omega_now(2); % omega_y
-    w_z = omega_now(3); % omega_z
-    
-    Ix = I(1); Iy = I(2); Iz = I(3);
-    u2 = u_rot_now(2); u3 = u_rot_now(3); u4 = u_rot_now(4);
-    
-    % --- 1. Dinámica (Momentos -> Aceleración Angular) ---
-    % Ecuaciones inferiores de la imagen
-    w_x_dot = ((Iy - Iz)/Ix)*w_y*w_z + (1/Ix)*u2;
-    w_y_dot = ((Iz - Ix)/Iy)*w_x*w_z + (1/Iy)*u3;
-    w_z_dot = ((Ix - Iy)/Iz)*w_x*w_y + (1/Iz)*u4;
-    
-    % --- 2. Cinemática (Velocidades Cuerpo -> Razon de cambio Ángulos Euler) ---
-    % Ecuaciones superiores de la imagen
-    % Nota: c(theta) es cos(theta), s(phi) es sin(phi), etc.
-    
-    % phi_dot (Roll rate)
-    phi_dot   = w_x + sin(phi)*(sin(theta)/cos(theta))*w_y + cos(phi)*(sin(theta)/cos(theta))*w_z;
-    
-    % theta_dot (Pitch rate)
-    theta_dot = cos(phi)*w_y - sin(phi)*w_z;
-    
-    % psi_dot (Yaw rate)
-    psi_dot   = (sin(phi)/cos(theta))*w_y + (cos(phi)/cos(theta))*w_z;
-    
-    % --- 3. Integración de Euler (Discreto) ---
-    omega_next = [w_x + dt*w_x_dot; 
-                  w_y + dt*w_y_dot; 
-                  w_z + dt*w_z_dot];
-              
-    ang_next   = [phi + dt*phi_dot; 
-                  theta + dt*theta_dot; 
-                  psi + dt*psi_dot]; 
-end
-%}

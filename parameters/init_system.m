@@ -19,8 +19,8 @@ Inertia = [Ix, Iy, Iz]; % Vector para pasar a la función
 % ==========================================
 % 2. CONFIGURACIÓN DE SIMULACIÓN Y MASAS
 % ==========================================
-dt = 1e-3;
-Tf = 60;       % Tiempo final
+dt = 1e-3; % Paso de tiempo (s)
+Tf = 50;       % Tiempo final
 t  = 0:dt:Tf;
 N  = numel(t) - 1;
 cuarto_tiempo = round(N / 2); % Encuentra el índice K en la mitad
@@ -75,9 +75,17 @@ uy_des = zeros(1, N+1);
 
 U = zeros(4, N+1);
 
-% Condiciones iniciales x1 y x2 del sistema
+% Condiciones iniciales x1 y x2 del sistema en altura
 z(1) = 0;
 vz(1) = 0;
+
+% Condiciones iniciales x1 y x2 del sistema en x
+x(1) = 10;
+vx(1) = 0;
+
+% Condiciones iniciales x1 y x2 del sistema en y
+y(1) = 0;
+vy(1) = 0;
 
 % Inicialización ley de control
 u_z_dynamic = m*g;
@@ -89,8 +97,8 @@ zn(1) = 0;
 vzn(1) = 0;
 
 % Inicialización de Roll y Pitch
-ang(1,1) = deg2rad(10);
-ang(2,1) = deg2rad(-10);
+ang(1,1) = deg2rad(0);
+ang(2,1) = deg2rad(0);
 
 ang_nn(1,1) = ang(1,1);
 ang_nn(2,1) = ang(2,1);
@@ -182,13 +190,13 @@ p2_yaw(:,:,1) = eye(dim_set_2_yaw) * 1e3;
 % Si $Q$ es demasiado grande, los pesos nunca convergerán y oscilarán (ruido)
 Q1_x_dynamic = zeros(dim_set_1_x_dynamic, dim_set_1_x_dynamic, N+1);
 Q2_x_dynamic = zeros(dim_set_2_x_dynamic, dim_set_2_x_dynamic, N+1);
-Q1_x_dynamic(:,:,1) = eye(dim_set_1_x_dynamic) * 1e-5;
-Q2_x_dynamic(:,:,1) = eye(dim_set_2_x_dynamic) * 3e-5;
+Q1_x_dynamic(:,:,1) = eye(dim_set_1_x_dynamic) * 1e4;
+Q2_x_dynamic(:,:,1) = eye(dim_set_2_x_dynamic) * 3e2;
 
 Q1_y_dynamic = zeros(dim_set_1_y_dynamic, dim_set_1_y_dynamic, N+1);
 Q2_y_dynamic = zeros(dim_set_2_y_dynamic, dim_set_2_y_dynamic, N+1);
-Q1_y_dynamic(:,:,1) = eye(dim_set_1_y_dynamic) * 1e-5;
-Q2_y_dynamic(:,:,1) = eye(dim_set_2_y_dynamic) * 3e-5;
+Q1_y_dynamic(:,:,1) = eye(dim_set_1_y_dynamic) * 1e4;
+Q2_y_dynamic(:,:,1) = eye(dim_set_2_y_dynamic) * 3e2;
 
 Q1_z_dynamic = zeros(dim_set_1_z_dynamic, dim_set_1_z_dynamic, N+1);
 Q2_z_dynamic = zeros(dim_set_2_z_dynamic, dim_set_2_z_dynamic, N+1);
@@ -266,3 +274,6 @@ e1_yaw = zeros(1, N);        % errores para graficar
 e2_yaw = zeros(1, N);
 e1_ident_yaw = zeros(1,N);  %errores de identificacion
 e2_ident_yaw = zeros(1,N);
+
+ex_sum = 0;
+ey_sum = 0;

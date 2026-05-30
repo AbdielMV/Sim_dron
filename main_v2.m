@@ -1,7 +1,7 @@
 % =========================================================================
 % SIMULADOR UAV - CONTROL NEURONAL RHONN EKF
 % =========================================================================
-clear all; close all; clc;
+clear; close all; clc;
 
 % Agregar subcarpetas al path de MATLAB para que encuentre las funciones
 addpath('parameters', 'dynamics', 'control_rhonn', 'utils', 'visualization', 'efk', 'rhonn_model');
@@ -11,13 +11,13 @@ addpath('parameters', 'dynamics', 'control_rhonn', 'utils', 'visualization', 'ef
 run('init_system.m'); 
 
 % 2. Generación de Referencias
-[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 2);
+[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 1);
 ref_roll = ones(1,N+2)*deg2rad(0);
 ref_pitch = ones(1,N+2)*deg2rad(0);
 ref_yaw = ones(1,N+2)*deg2rad(0);
 target_x = ref_total(1, :); % Solo la componente X para el control de posición X
 target_y = ref_total(2, :); % Solo la componente Y para el control de posición Y
-vx_target = dref_total(1, :);
+vx_target = dref_total(1, :); % Solo la componente X para el control de velocidad X
 vy_target = dref_total(2, :);
 target_z = ref_total(3, :); % Solo la componente Z para el control de altura Z
 ref_roll_rhonn = zeros(1, N+2); % Referencia de roll calculada por el controlador RHONN (lazo externo)
@@ -26,7 +26,7 @@ ref_pitch_rhonn = zeros(1, N+2); % Referencia de pitch calculada por el controla
 % ==========================================
 % 3. BUCLE PRINCIPAL DE SIMULACIÓN
 % ==========================================
-fprintf('Iniciando simulación. Cambio de masa en t=%.2fs...\n', t(cuarto_tiempo));
+fprintf('Iniciando simulación...\n');
 
 for k = 1:N
     
@@ -41,7 +41,7 @@ for k = 1:N
 
     [xn(k+1), vxn(k+1), H_x_dynamic, Iwu_x_dynamic, Iwx_x_dynamic] = rhonn_model_x_dynamic(x(k), vx(k), ...
         ang(1,k), ang(3,k), ang(2,k), ux_des(1,k), w1_x_dynamic(:,k), w2_x_dynamic(:,k), dt, m);
-    
+
     [yn(k+1), vyn(k+1), H_y_dynamic, Iwu_y_dynamic, Iwx_y_dynamic] = rhonn_model_y_dynamic(y(k), vy(k), ...
         ang(1,k), ang(3,k), ang(2,k), uy_des(1,k), w1_y_dynamic(:,k), w2_y_dynamic(:,k), dt, m);
 
@@ -91,43 +91,10 @@ for k = 1:N
     % --- PASO 4.5: CONTROL DE POSICIÓN X-Y (Lazo Externo) ---
     % ==========================================================
     
-    % % 1. Definir la Referencia (Destino constante)
-    % target_x = 5.0; % Queremos ir a X = 5 metros
-    % target_y = 5.0; % Queremos ir a Y = 5 metros
-    % vx_target = 0;  % Queremos frenar al llegar
-    % vy_target = 0;
-
-    %{
-    % 1. Configuración del Círculo
-    t_actual = (k-1) * dt;
-    Radio = 10.0;             % Amplitud (radio) de 10 metros
-    Frecuencia = 0.05;        % Hz (0.05 Hz = 1 vuelta cada 20 segundos, muy lento y estable)
-    Omega = 2 * pi * Frecuencia;
-
-    % Posición deseada actual (Ecuaciones paramétricas)
-    target_x = Radio * cos(Omega * t_actual);
-    target_y = Radio * sin(Omega * t_actual);
-    
-    % Velocidad deseada actual (Derivadas analíticas para no atrasarse)
-    vx_target = -Radio * Omega * sin(Omega * t_actual);
-    vy_target =  Radio * Omega * cos(Omega * t_actual);
-    %}
-
-    %{
     % Referencia de Yaw (Gira lentamente)
     ref_yaw(k) = 0.2*t_ref(k)*pi; % Referencia de Yaw (Gira lentamente)
     ref_yaw(k+1) = 0.2*t_ref(k+1)*pi; % Referencia de Yaw (Gira lentamente)
     ref_yaw(k+2) = 0.2*t_ref(k+2)*pi; % Referencia de Yaw (Gira lentamente)
-    %}
-
-    %{
-    % Establecer la referencia de posición actual (puede ser fija o dinámica)
-    target_x = ref_total(1, k);
-    target_y = ref_total(2, k);
-    
-    vx_target = dref_total(1, k);
-    vy_target = dref_total(2, k);
-    %}
     
     % 2. Llamar al controlador PID que calcula los ángulos necesarios
     [ref_phi_calc(k), ref_theta_calc(k)] = control_posicion_xy_pid(...
@@ -148,13 +115,20 @@ for k = 1:N
 
     [e1_x_dynamic(k), e2_x_dynamic(k), ux_des(k+1)] = control_rhonn_feedback_x_dynamic(...
         x(k), vx(k), ang(1,k), ang(3,k), ang(2,k), xn(k+1), w1_x_dynamic(:,k), w2_x_dynamic(:,k), dt, Iwx_x_dynamic, Iwu_x_dynamic, ...
-        target_x(k), target_x(k+1), target_x(k+2), m, g);
+        target_x(k), target_x(k+1), target_x(k+2), m, g, ex_sum);
+    
+    % Sumatorio del error x
+    ex_sum = ex_sum + e1_x_dynamic(k); % Integral del error para el control integral
     
     [e1_y_dynamic(k), e2_y_dynamic(k), uy_des(k+1)] = control_rhonn_feedback_y_dynamic(...
         y(k), vy(k), ang(1,k), ang(3,k), ang(2,k), yn(k+1), w1_y_dynamic(:,k), w2_y_dynamic(:,k), dt, Iwx_y_dynamic, Iwu_y_dynamic, ...
-        target_y(k), target_y(k+1), target_y(k+2), m, g);
+        target_y(k), target_y(k+1), target_y(k+2), m, g, ey_sum);
     
-    [ref_phi_calc_rhonn, ref_theta_calc_rhonn] = compensator(ux_des(k+1), uy_des(k+1), ang(3,k));
+    % Sumatorio del error y
+    ey_sum = ey_sum + e1_y_dynamic(k); % Integral del error para el
+
+    [ref_phi_calc_rhonn, ref_theta_calc_rhonn] = compensator(ux_des(k+1), uy_des(k+1), ang(3,k), U(1,k));
+
     vector_indices = k : min(k+2, length(ref_roll));
     ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn;
     ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn;

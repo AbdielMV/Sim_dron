@@ -11,7 +11,7 @@ addpath('parameters', 'dynamics', 'control_rhonn', 'utils', 'visualization', 'ef
 run('init_system.m'); 
 
 % 2. Generación de Referencias
-[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 1);
+[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 3);
 ref_roll = ones(1,N+2)*deg2rad(0);
 ref_pitch = ones(1,N+2)*deg2rad(0);
 ref_yaw = ones(1,N+2)*deg2rad(0);
@@ -29,7 +29,7 @@ for k = 1:N
     u_zoh = U(:, k); 
     m_k = m_real(k);
 
-    for j = 1:M
+    for j = 1:1
         k1 = drone_derivatives(S, u_zoh, m_k, g, k_wind, Inertia);
         k2 = drone_derivatives(S + (dt_cont/2)*k1, u_zoh, m_k, g, k_wind, Inertia);
         k3 = drone_derivatives(S + (dt_cont/2)*k2, u_zoh, m_k, g, k_wind, Inertia);

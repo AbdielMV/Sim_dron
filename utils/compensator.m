@@ -1,4 +1,10 @@
-function [ref_phi, ref_theta] = compensator(ux_des, uy_des, psi)
+function [ref_phi, ref_theta] = compensator(ux_des, uy_des, psi, u_z)
+    % Saturación de Aceleración (Seguridad)
+    % Limitamos a ~2.5 m/s^2 (aprox 15 grados)
+    acc_sat = 2.5;
+    ux_des = max(-acc_sat, min(acc_sat, ux_des));
+    uy_des = max(-acc_sat, min(acc_sat, uy_des));
+    
     % 1. Convertir las fuerzas pedidas por el controlador RHONN a aceleraciones
     m = 0.468;
     g = 9.81;
@@ -14,7 +20,9 @@ function [ref_phi, ref_theta] = compensator(ux_des, uy_des, psi)
     ref_phi   =  acc_lat / g; % Roll (+) mueve hacia la derecha (verifica la física)
 
     % 4. Saturación por seguridad (Máximo ~20 grados)
-    max_ang = deg2rad(30);
+    max_ang = deg2rad(40);
     ref_theta = max(-max_ang, min(max_ang, ref_theta));
     ref_phi   = max(-max_ang, min(max_ang, ref_phi));
+
+
 end
