@@ -13,8 +13,8 @@ function [w1_next,w2_next,p1_next,p2_next,e1,e2] = efk_training_z_dynamic(H,z_no
     
     % Para Dron n=1, C1 dim=3, C2 dim=4.
     
-    H1 = [H(1);H(2)];
-    H2 = [H(3);H(4);H(5)];
+    H1 = [H(1);H(2)]; % Dimensión 2
+    H2 = [H(3);H(4);H(5)]; % Dimensión 4
 
     e_k = [x1 - x1n, x2 - x2n];
     eta = [0.5, 0.5]; % Si cambio el learning rate también cambia las ganancias necesarias

@@ -20,18 +20,14 @@ Inertia = [Ix, Iy, Iz]; % Vector para pasar a la función
 % 2. CONFIGURACIÓN DE SIMULACIÓN Y MASAS
 % ==========================================
 dt = 1e-3; % Paso de tiempo (s)
-Tf = 50;       % Tiempo final
+Tf = 20;       % Tiempo final
 t  = 0:dt:Tf;
 N  = numel(t) - 1;
 cuarto_tiempo = round(N / 2); % Encuentra el índice K en la mitad
 
 % Masa Nominal (Usada por el Controlador y la RHONN)
 m_nominal = 0.468;
-
-% Masa Real (Usada en la Dinámica Física)
-m_real = zeros(1, N+1);
-m_real(1:cuarto_tiempo) = m_nominal;
-m_real(cuarto_tiempo+1:N+1) = m_nominal * 1; % ¡Aumento del 10% a la mitad!
+m_real = m_nominal * ones(1, N+1); % Inicializa el vector de masa real con la nominal
 
 % Reemplaza la inicialización de masa en tu código principal con m_nominal
 m = m_nominal;
@@ -80,7 +76,7 @@ z(1) = 0;
 vz(1) = 0;
 
 % Condiciones iniciales x1 y x2 del sistema en x
-x(1) = 10;
+x(1) = 0;
 vx(1) = 0;
 
 % Condiciones iniciales x1 y x2 del sistema en y
@@ -200,8 +196,8 @@ Q2_y_dynamic(:,:,1) = eye(dim_set_2_y_dynamic) * 3e2;
 
 Q1_z_dynamic = zeros(dim_set_1_z_dynamic, dim_set_1_z_dynamic, N+1);
 Q2_z_dynamic = zeros(dim_set_2_z_dynamic, dim_set_2_z_dynamic, N+1);
-Q1_z_dynamic(:,:,1) = eye(dim_set_1_z_dynamic) * 1e-5;
-Q2_z_dynamic(:,:,1) = eye(dim_set_2_z_dynamic) * 3e-5;
+Q1_z_dynamic(:,:,1) = eye(dim_set_1_z_dynamic) * 1e5;
+Q2_z_dynamic(:,:,1) = eye(dim_set_2_z_dynamic) * 3e5;
 
 Q1_roll = zeros(dim_set_1_roll, dim_set_1_roll, N+1);
 Q2_roll = zeros(dim_set_2_roll, dim_set_2_roll, N+1);
@@ -215,8 +211,8 @@ Q2_pitch(:,:,1) = eye(dim_set_2_pitch) * 0.1;
 
 Q1_yaw = zeros(dim_set_1_yaw, dim_set_1_yaw, N+1);
 Q2_yaw= zeros(dim_set_2_yaw, dim_set_2_yaw, N+1);
-Q1_yaw(:,:,1) = eye(dim_set_1_yaw) * 1e-5;
-Q2_yaw(:,:,1) = eye(dim_set_2_yaw) * 0.1;
+Q1_yaw(:,:,1) = eye(dim_set_1_yaw) * 1e5;
+Q2_yaw(:,:,1) = eye(dim_set_2_yaw) * 2e5;
 
 % Inicialización R1 y R2 (Covarianza del ruido de medición)
 % Representa la incertidumbre o "confianza" que tienes en los datos con los

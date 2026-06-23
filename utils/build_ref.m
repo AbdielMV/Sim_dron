@@ -17,9 +17,11 @@ function [t_ref, ref, dref, ddref] = build_ref(dt, Tf, tipo_trayectoria)
 
     switch tipo_trayectoria
         case 1 % ===== OPCIÓN: TRAYECTORIA CONSTANTE =====
-            ref(1, :) = 20.0 * ones(1, N); % Queremos ir a X = 5 metros
-            ref(2, :) = 10.0 * ones(1, N); % Queremos ir a Y = 5 metros
-            ref(3, :) = 6 + 0.0*t_ref;      % Queremos mantener Z constante
+            Frecuencia = 0.2;
+            Omega = 2 * pi * Frecuencia;
+            ref(1, :) = 0.0 * ones(1, N); % Queremos ir a X = 5 metros
+            ref(2, :) = 0.0 * ones(1, N); % Queremos ir a Y = 5 metros
+            ref(3, :) = 1*sin(Omega*t_ref) + 0.5*t_ref;      % Queremos mantener Z constante
 
             % Velocidad (Derivada numérica)
             % Calculamos la diferencia entre puntos y dividimos por dt

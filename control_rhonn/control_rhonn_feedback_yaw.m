@@ -23,7 +23,7 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_yaw(psi, w_z, phi, theta, w
     e1k_1 = x1k_1 - x1dk_1;
     e2k  = (x1k_1 - x1dk_1 - e1k)/dt;
 
-    k1 = 3e3; k2 = 3e1; % Ganancias para Ref Constante
+    k1 = 7e3; k2 = 2e1; % Ganancias para Ref Constante
 
     % k1 = 2e3; k2 = (2*sqrt(k1)) + k1*0.1; % Ganancias para Ref Sinoidal
 

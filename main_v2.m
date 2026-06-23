@@ -188,4 +188,4 @@ e2_ident_yaw = [e2_ident_yaw, e2_ident_yaw(end)];
 % ==========================================
 % Llamamos a un script externo para no saturar este archivo
 plot_results; % Descomentar para generar las gráficas  
-animate_drone; % Descomentar para generar el video 3D
+%animate_drone; % Descomentar para generar el video 3D

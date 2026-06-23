@@ -1,8 +1,8 @@
 function [U, omega_motors] = saturacion_motors(u_torques, cT, d, cQ)
 
     M = [ cT,     cT,     cT,     cT;
-         -d*cT, -d*cT,  d*cT,  d*cT;
-         -d*cT,  d*cT,  d*cT, -d*cT;
+         -(sqrt(2)/2)*d*cT, -(sqrt(2)/2)*d*cT,  (sqrt(2)/2)*d*cT,  (sqrt(2)/2)*d*cT;
+         -(sqrt(2)/2)*d*cT,  (sqrt(2)/2)*d*cT,  (sqrt(2)/2)*d*cT, -(sqrt(2)/2)*d*cT;
          -cQ,     cQ,   -cQ,    cQ];
 
     omega_square = inv(M)*u_torques;

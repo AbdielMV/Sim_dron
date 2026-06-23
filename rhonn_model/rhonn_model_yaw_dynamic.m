@@ -18,12 +18,11 @@ function [XN1_next, XN2_next, H, Iwu, Iwx] = rhonn_model_yaw_dynamic(psi, omega_
 
     %Input Weight
     Iw14= 0.001; %0.008; %0.08
-    Iw24= 1; %0.09; %0.9
+    Iw24= 100; %0.09; %0.9
 
     %Update Neural States
     XN1_next = (w1'*C1) + (Iw14*x2k);
     XN2_next = (w2'*C2) + Iw24*(u_now*dt);
-    % XN2_next = (w2'*C2) + Iw24*((u_now*dt)/m);
 
     H = [C1;C2];
     Iwx = Iw14;

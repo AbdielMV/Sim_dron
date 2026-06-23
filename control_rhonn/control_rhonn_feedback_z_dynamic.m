@@ -21,7 +21,7 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_z_dynamic(z_now, v_now, phi
     e1k_1 = x1k_1 - x1dk_1;
     e2k  = (e1k_1 - e1k)/dt;
 
-    k1 = 2e3; k2 = 2e1;
+    k1 = 9e3; k2 = 2e1;
 
     %k1 = 3.5e3; k2 = (2*sqrt(k1))+((2*sqrt(k1))*0.1); % Ganancias para Ref Constante
 
@@ -31,6 +31,6 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_z_dynamic(z_now, v_now, phi
 
     alpha = (((e2k + (dt*v))*dt) - (w1(1,1)*sgm(x1k_1)) - w1(2,1) + x1dk_2 + e1k_1)*(1/w13);
 
-    u_next = ((alpha - (w2(1,1)*sgm(x2k)) - w2(2,1) - (w2(3,1)*sgm(x3k)*sgm(x4k)))*(1/w24) + g)*(m);
+    u_next = ((alpha - (w2(1,1)*sgm(x2k)) - w2(2,1)  - (w2(3,1)*sgm(x3k)*sgm(x4k)))*(1/w24) + g)*(m);
         
 end
