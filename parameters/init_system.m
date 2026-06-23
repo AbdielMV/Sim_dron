@@ -28,10 +28,6 @@ cuarto_tiempo = round(N / 2); % Encuentra el índice K en la mitad
 % Masa Nominal (Usada por el Controlador y la RHONN)
 m_nominal = 0.468;
 m_real = m_nominal * ones(1, N+1); % Inicializa el vector de masa real con la nominal
-
-% Reemplaza la inicialización de masa en tu código principal con m_nominal
-m = m_nominal;
-g = 9.81; % Asegurarte que g está definido
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Estados y control de altura
