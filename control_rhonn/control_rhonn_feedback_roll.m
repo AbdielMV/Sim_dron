@@ -21,7 +21,7 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_roll(phi, w_x, theta, w_y, 
     e1k_1 = x1k_1 - x1dk_1;
     e2k  = (e1k_1 - e1k)/dt;
 
-    k1 = 2e4; k2 = 1e3;
+    k1 = 2e4; k2 = 8e0;
 
     % k1 = 2e4; k2 = 1e3; % Ganancias para Ref Constante
 
@@ -29,7 +29,7 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_roll(phi, w_x, theta, w_y, 
 
     v = -k1*e1k - k2*e2k;
 
-    alpha = (((e2k + (dt*v))*dt) - (w1(1,1)*sgm(x1k_1)) - (w1(2,1)*sgm(x3k_1)*sgm(x1k_1)*sgm(x4k_1)) - (w1(3,1)*sgm(x3k_1)*sgm(x1k_1)*sgm(x5k_1)) + x1dk_2 + e1k_1)*(1/w14);
+    alpha = (((e2k + (dt*v))*dt) - (w1(1,1)*sgm(x1k_1)) - w1(2,1) - w1(3,1) + x1dk_2 + e1k_1)*(1/w14);
 
-    u_next = (alpha - (w2(1,1)*sgm(x2k)) - (w2(2,1)*sgm(x4k)*sgm(x5k)) + (w2(3,1)*sgm(x4k)*sgm(x5k)) + w2(4,1))*(1/w24);
+    u_next = (alpha - (w2(1,1)*sgm(x2k)) - w2(2,1) + w2(3,1) + w2(4,1))*(1/w24);
 end

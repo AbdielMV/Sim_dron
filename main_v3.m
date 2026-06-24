@@ -123,11 +123,21 @@ for k = 1:N
     % Protección contra Gimbal Lock y maniobras agresivas
     ref_phi_calc_rhonn   = max(min(ref_phi_calc_rhonn, max_inclinacion), -max_inclinacion);
     ref_theta_calc_rhonn = max(min(ref_theta_calc_rhonn, max_inclinacion), -max_inclinacion);
+    %ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn;
+    %ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn;
 
     % Asignación a vectores de referencia
     vector_indices = k : min(k+2, length(ref_roll_rhonn));
-    ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn;
-    ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn;
+    if t(k) > 0 && t(k) < 15
+        ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn*0;
+        ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn*0;
+    elseif t(k) >= 15 && t(k) < 25
+        ref_roll_rhonn(vector_indices)  = (ref_phi_calc_rhonn/ref_phi_calc_rhonn)*deg2rad(20);
+        ref_pitch_rhonn(vector_indices) = (ref_theta_calc_rhonn/ref_theta_calc_rhonn)*deg2rad(-20);
+    else
+        ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn*0;
+        ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn*0;
+    end
 
     % =============================================================================
     % --- PASO 6: Control de Rotación (Lazo Interno Roll, Pitch, Yaw) ---
@@ -142,8 +152,8 @@ for k = 1:N
         ang(3,k), omega(3,k), ang(1,k), ang(2,k), omega(1,k), omega(2,k), ang_nn(3,k), omega_nn(3,k), ang_nn(1,k), ang_nn(2,k), omega_nn(1,k), omega_nn(2,k), w1_yaw(:,k), w2_yaw(:,k), dt, Iwx_yaw, Iwu_yaw, ref_yaw(k), ref_yaw(k+1), ref_yaw(k+2));
 
     %u_neural_rot(1,k+1) = m_k*g; % Desactivando control de Z (Mantener Altura)
-    u_neural_rot(2,k+1) = 0; % Desactivando control de Roll
-    u_neural_rot(3,k+1) = 0; % Desactivando control de Pitch
+    %u_neural_rot(2,k+1) = 0; % Desactivando control de Roll
+    %u_neural_rot(3,k+1) = 0; % Desactivando control de Pitch
     %u_neural_rot(4,k+1) = 0; % Desactivando control de Yaw
 
     % =====================================================================

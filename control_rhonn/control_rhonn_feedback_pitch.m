@@ -3,13 +3,6 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_pitch(theta, w_y, phi, w_x,
     x1k = theta;
     x1k_1 = theta_next;
     x2k   = w_y;
-    x2k_1 = w_y_next;
-    x3k = phi;
-    x3k_1 = phi_next;
-    x4k = w_x;
-    x4k_1 = w_x_next;
-    x5k = w_z;
-    x5k_1 = w_z_next;
     x1dk    = ref;
     x1dk_1  = ref_next;
     x1dk_2  = ref_two_next;
@@ -21,7 +14,7 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_pitch(theta, w_y, phi, w_x,
     e1k_1 = x1k_1 - x1dk_1;
     e2k  = (e1k_1 - e1k)/dt;
 
-    k1 = 2e4; k2 = 1e3; % Ganancias para Ref Constante
+    k1 = 2e4; k2 = 8e0; % Ganancias para Ref Constante
     
     % k1 = 1.99995;
 
@@ -29,7 +22,7 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_pitch(theta, w_y, phi, w_x,
 
     v = -k1*e1k - k2*e2k;
 
-    alpha = (((e2k + (dt*v))*dt) - (w1(1,1)*sgm(x1k_1)) + (w1(2,1)*sgm(x3k_1)*sgm(x5k_1)) - w1(3,1) + x1dk_2 + e1k_1)*(1/w14);
+    alpha = (((e2k + (dt*v))*dt) - (w1(1,1)*sgm(x1k_1)) + w1(2,1) - w1(3,1) + x1dk_2 + e1k_1)*(1/w14);
 
-    u_next = (alpha - (w2(1,1)*sgm(x2k)) - (w2(2,1)*sgm(x4k)*sgm(x5k)) + (w2(3,1)*sgm(x4k)*sgm(x5k)) - w2(4,1))*(1/w24);
+    u_next = (alpha - (w2(1,1)*sgm(x2k)) - w2(2,1) + w2(3,1) - w2(4,1))*(1/w24);
 end

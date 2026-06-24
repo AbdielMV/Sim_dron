@@ -89,8 +89,8 @@ zn(1) = 0;
 vzn(1) = 0;
 
 % Inicialización de Roll y Pitch
-ang(1,1) = deg2rad(0);
-ang(2,1) = deg2rad(0);
+ang(1,1) = deg2rad(-20);
+ang(2,1) = deg2rad(20);
 
 ang_nn(1,1) = ang(1,1);
 ang_nn(2,1) = ang(2,1);
