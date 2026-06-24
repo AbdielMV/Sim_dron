@@ -20,7 +20,7 @@ Inertia = [Ix, Iy, Iz]; % Vector para pasar a la función
 % 2. CONFIGURACIÓN DE SIMULACIÓN Y MASAS
 % ==========================================
 dt = 1e-3; % Paso de tiempo (s)
-Tf = 20;       % Tiempo final
+Tf = 30;       % Tiempo final
 t  = 0:dt:Tf;
 N  = numel(t) - 1;
 cuarto_tiempo = round(N / 2); % Encuentra el índice K en la mitad
@@ -67,7 +67,7 @@ uy_des = zeros(1, N+1);
 
 U = zeros(4, N+1);
 
-% Condiciones iniciales x1 y x2 del sistema en altura
+% Condiciones iniciales x1 y x2 del sistema en z
 z(1) = 0;
 vz(1) = 0;
 
@@ -105,7 +105,7 @@ dim_set_2_y_dynamic = 3; %C2
 
 % EFK SIZE Z DYNAMIC
 dim_set_1_z_dynamic = 2; %C1
-dim_set_2_z_dynamic = 3; %C2
+dim_set_2_z_dynamic = 2; %C2
 
 % EFK SIZE ROLL
 dim_set_1_roll = 3; %C1
@@ -116,8 +116,8 @@ dim_set_1_pitch = 3; %C1
 dim_set_2_pitch = 4; %C2
 
 % EFK SIZE YAW
-dim_set_1_yaw = 3; %C1
-dim_set_2_yaw = 3; %C2
+dim_set_1_yaw = 2; %C1
+dim_set_2_yaw = 2; %C2
 
 % Inicialización Pesos Sinápticos X 
 w1_x_dynamic = zeros(dim_set_1_x_dynamic, N+1);
@@ -198,12 +198,12 @@ Q2_z_dynamic(:,:,1) = eye(dim_set_2_z_dynamic) * 3e5;
 Q1_roll = zeros(dim_set_1_roll, dim_set_1_roll, N+1);
 Q2_roll = zeros(dim_set_2_roll, dim_set_2_roll, N+1);
 Q1_roll(:,:,1) = eye(dim_set_1_roll) * 1e-5;
-Q2_roll(:,:,1) = eye(dim_set_2_roll) * 3e-5;
+Q2_roll(:,:,1) = eye(dim_set_2_roll) * 1e-2;
 
 Q1_pitch = zeros(dim_set_1_pitch, dim_set_1_pitch, N+1);
 Q2_pitch = zeros(dim_set_2_pitch, dim_set_2_pitch, N+1);
 Q1_pitch(:,:,1) = eye(dim_set_1_pitch) * 1e-5;
-Q2_pitch(:,:,1) = eye(dim_set_2_pitch) * 0.1;
+Q2_pitch(:,:,1) = eye(dim_set_2_pitch) * 1e-2;
 
 Q1_yaw = zeros(dim_set_1_yaw, dim_set_1_yaw, N+1);
 Q2_yaw= zeros(dim_set_2_yaw, dim_set_2_yaw, N+1);
@@ -269,3 +269,8 @@ e2_ident_yaw = zeros(1,N);
 
 ex_sum = 0;
 ey_sum = 0;
+
+% Referencias internas pre-asignadas
+ref_roll_rhonn  = zeros(1, N+2); 
+ref_pitch_rhonn = zeros(1, N+2); 
+ref_yaw         = zeros(1, N+2); 

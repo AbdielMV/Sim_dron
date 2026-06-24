@@ -11,10 +11,10 @@ function [w1_next,w2_next,p1_next,p2_next,e1,e2] = efk_training_yaw(H,z_now,v_no
     % Ajusta los índices según el tamaño de tu vector H concatenado en rhonn_model.
     % H viene como [C1; C2].
     
-    % Para Dron n=1, C1 dim=3, C2 dim=4.
+    % Para Dron n=1, C1 dim=2, C2 dim=2.
     
-    H1 = [H(1);H(2);H(3)];
-    H2 = [H(4);H(5);H(6)];
+    H1 = [H(1);H(2)];
+    H2 = [H(3);H(4)];
 
     e_k = [x1 - x1n, x2 - x2n];
     eta = [0.6, 0.6]; % Si cambio el learning rate también cambia las ganancias necesarias
