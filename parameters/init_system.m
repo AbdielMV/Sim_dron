@@ -28,6 +28,10 @@ cuarto_tiempo = round(N / 2); % Encuentra el índice K en la mitad
 % Masa Nominal (Usada por el Controlador y la RHONN)
 m_nominal = 0.468;
 m_real = m_nominal * ones(1, N+1); % Inicializa el vector de masa real con la nominal
+Ix_real = Inertia(1) * ones(1, N+1); % Inicializa el vector de inercia real en x con la nominal
+Iy_real = Inertia(2) * ones(1, N+1); % Inicializa el vector de inercia real en y con la nominal
+Iz_real = Inertia(3) * ones(1, N+1); % Inicializa el vector de inercia real en z con la nominal
+tau_dist = zeros(1, N+1); % Inicializa el vector de torque/disturbio con ceros
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Estados y control de altura

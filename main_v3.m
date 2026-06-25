@@ -30,17 +30,27 @@ for k = 1:N
     % =====================================================================
     % --- PASO 1: Dinámica Física Real (RK4 Multi-Tasa) ---
     % =====================================================================
+
+    % El dron agarra un objeto entre t=15s y t=20s, lo que cambia su masa y su inercia
     if t(k) >=15 && t(k) <= 20
         m_k = m_real(k) * 3; % Simulación de cambio de masa (ejemplo)
+        Ix_k = Ix_real(k) * 1.6; % Ajuste de inercia para simular cambio de masa
+        Iy_k = Iy_real(k) * 1.2; % Ajuste de inercia para simular cambio de masa
+        Iz_k = Iz_real(k) * 1.4; % Ajuste de inercia para simular cambio de masa
     else
     m_k = m_real(k);
+    Iz_k = Iz_real(k);
+    Ix_k = Ix_real(k);
+    Iy_k = Iy_real(k);
     end
 
+    Inertia_k = [Ix_k, Iy_k, Iz_k]; % Actualización de la inercia para el paso actual
+
     for j = 1:M
-        k1_rk = drone_derivatives(S, U(:,k), m_k, g, k_wind, Inertia);
-        k2_rk = drone_derivatives(S + 0.5*dt_cont*k1_rk, U(:,k), m_k, g, k_wind, Inertia);
-        k3_rk = drone_derivatives(S + 0.5*dt_cont*k2_rk, U(:,k), m_k, g, k_wind, Inertia);
-        k4_rk = drone_derivatives(S + dt_cont*k3_rk, U(:,k), m_k, g, k_wind, Inertia);
+        k1_rk = drone_derivatives(S, U(:,k), m_k, g, k_wind, Inertia_k);
+        k2_rk = drone_derivatives(S + 0.5*dt_cont*k1_rk, U(:,k), m_k, g, k_wind, Inertia_k);
+        k3_rk = drone_derivatives(S + 0.5*dt_cont*k2_rk, U(:,k), m_k, g, k_wind, Inertia_k);
+        k4_rk = drone_derivatives(S + dt_cont*k3_rk, U(:,k), m_k, g, k_wind, Inertia_k);
         
         S = S + (dt_cont/6)*(k1_rk + 2*k2_rk + 2*k3_rk + k4_rk);
     end
