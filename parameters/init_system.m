@@ -31,7 +31,9 @@ m_real = m_nominal * ones(1, N+1); % Inicializa el vector de masa real con la no
 Ix_real = Inertia(1) * ones(1, N+1); % Inicializa el vector de inercia real en x con la nominal
 Iy_real = Inertia(2) * ones(1, N+1); % Inicializa el vector de inercia real en y con la nominal
 Iz_real = Inertia(3) * ones(1, N+1); % Inicializa el vector de inercia real en z con la nominal
-tau_dist = zeros(1, N+1); % Inicializa el vector de torque/disturbio con ceros
+tau_x_dist = zeros(1, N+1); % Inicializa el vector de torque/disturbio con ceros para x
+tau_y_dist = zeros(1, N+1); % Inicializa el vector de torque/disturbio con ceros para y
+tau_z_dist = zeros(1, N+1); % Inicializa el vector de torque/disturbio con ceros para z
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Estados y control de altura

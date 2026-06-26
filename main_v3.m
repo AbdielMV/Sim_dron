@@ -32,8 +32,12 @@ for k = 1:N
     % =====================================================================
 
     % El dron agarra un objeto entre t=15s y t=20s, lo que cambia su masa y su inercia
-    if t(k) >=15 && t(k) <= 20
-        m_k = m_real(k) * 3; % Simulación de cambio de masa (ejemplo)
+    if t(k) >= 10 && t(k) < 10.5
+        tau_x_dist(k) = 0.05; % Simulación de torque/disturbio en x
+        tau_y_dist(k) = 0.05; % Simulación de torque/disturbio en y
+        tau_z_dist(k) = 0.05; % Simulación de torque/disturbio en z
+    elseif t(k) >=15 && t(k) <= 20
+        m_k = m_real(k) * 2; % Simulación de cambio de masa (ejemplo)
         Ix_k = Ix_real(k) * 1.6; % Ajuste de inercia para simular cambio de masa
         Iy_k = Iy_real(k) * 1.2; % Ajuste de inercia para simular cambio de masa
         Iz_k = Iz_real(k) * 1.4; % Ajuste de inercia para simular cambio de masa
@@ -42,16 +46,20 @@ for k = 1:N
     Iz_k = Iz_real(k);
     Ix_k = Ix_real(k);
     Iy_k = Iy_real(k);
+    tau_x_dist(k) = 0; % Sin torque/disturbio en x
+    tau_y_dist(k) = 0; % Sin torque/disturbio en y
+    tau_z_dist(k) = 0; % Sin torque/disturbio en z
     end
 
     Inertia_k = [Ix_k, Iy_k, Iz_k]; % Actualización de la inercia para el paso actual
+    tau_dist_k = [tau_x_dist(k); tau_y_dist(k); tau_z_dist(k)]; % Actualización del torque/disturbio para el paso actual
 
     for j = 1:M
-        k1_rk = drone_derivatives(S, U(:,k), m_k, g, k_wind, Inertia_k);
-        k2_rk = drone_derivatives(S + 0.5*dt_cont*k1_rk, U(:,k), m_k, g, k_wind, Inertia_k);
-        k3_rk = drone_derivatives(S + 0.5*dt_cont*k2_rk, U(:,k), m_k, g, k_wind, Inertia_k);
-        k4_rk = drone_derivatives(S + dt_cont*k3_rk, U(:,k), m_k, g, k_wind, Inertia_k);
-        
+        k1_rk = drone_derivatives(S, U(:,k), m_k, g, k_wind, Inertia_k, tau_dist_k);
+        k2_rk = drone_derivatives(S + 0.5*dt_cont*k1_rk, U(:,k), m_k, g, k_wind, Inertia_k, tau_dist_k);
+        k3_rk = drone_derivatives(S + 0.5*dt_cont*k2_rk, U(:,k), m_k, g, k_wind, Inertia_k, tau_dist_k);
+        k4_rk = drone_derivatives(S + dt_cont*k3_rk, U(:,k), m_k, g, k_wind, Inertia_k, tau_dist_k);
+
         S = S + (dt_cont/6)*(k1_rk + 2*k2_rk + 2*k3_rk + k4_rk);
     end
     
@@ -142,8 +150,8 @@ for k = 1:N
         ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn*0;
         ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn*0;
     elseif t(k) >= 15 && t(k) < 25
-        ref_roll_rhonn(vector_indices)  = (ref_phi_calc_rhonn/ref_phi_calc_rhonn)*deg2rad(20);
-        ref_pitch_rhonn(vector_indices) = (ref_theta_calc_rhonn/ref_theta_calc_rhonn)*deg2rad(-20);
+        ref_roll_rhonn(vector_indices)  = (ref_phi_calc_rhonn/ref_phi_calc_rhonn)*deg2rad(0);
+        ref_pitch_rhonn(vector_indices) = (ref_theta_calc_rhonn/ref_theta_calc_rhonn)*deg2rad(0);
     else
         ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn*0;
         ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn*0;

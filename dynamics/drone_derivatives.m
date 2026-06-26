@@ -1,4 +1,4 @@
-function dS = drone_derivatives(S, u, m, g, k_wind, I)
+function dS = drone_derivatives(S, u, m, g, k_wind, I, tau_dist)
     % S = [x; vx; y; vy; z; vz; phi; theta; psi; wx; wy; wz]
     phi = S(7); theta = S(8); psi = S(9);
     vx = S(2); vy = S(4); vz = S(6);
@@ -15,9 +15,9 @@ function dS = drone_derivatives(S, u, m, g, k_wind, I)
     dvz = -g + (thrust_z - friccion_z) / m;
 
     % --- Rotación (Dinámica de momentos) ---
-    dwx = ((Iy - Iz)/Ix)*wy*wz + (1/Ix)*u2;
-    dwy = ((Iz - Ix)/Iy)*wx*wz + (1/Iy)*u3;
-    dwz = ((Ix - Iy)/Iz)*wx*wy + (1/Iz)*u4;
+    dwx = ((Iy - Iz)/Ix)*wy*wz + (1/Ix)*(u2 + tau_dist(1));
+    dwy = ((Iz - Ix)/Iy)*wx*wz + (1/Iy)*(u3 + tau_dist(2));
+    dwz = ((Ix - Iy)/Iz)*wx*wy + (1/Iz)*(u4 + tau_dist(3));
 
     % --- Cinemática (Razon de cambio de ángulos) ---
     dphi   = wx + sin(phi)*(sin(theta)/cos(theta))*wy + cos(phi)*(sin(theta)/cos(theta))*wz;
