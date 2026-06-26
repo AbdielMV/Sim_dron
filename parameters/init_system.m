@@ -279,4 +279,6 @@ ey_sum = 0;
 % Referencias internas pre-asignadas
 ref_roll_rhonn  = zeros(1, N+2); 
 ref_pitch_rhonn = zeros(1, N+2); 
-ref_yaw         = zeros(1, N+2); 
+ref_yaw         = zeros(1, N+2);
+ref_roll_pid   = zeros(1, N+2);
+ref_pitch_pid  = zeros(1, N+2); 

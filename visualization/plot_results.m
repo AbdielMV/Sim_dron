@@ -116,24 +116,24 @@ ylabel('vz (m/s)'); xlabel('Tiempo (s)'); title('Velocidad Z Discreta');
 % --- 3. Dinámica Rotacional (Ángulos) ---
 figure('Name', 'Dinámica Rotacional: Ángulos');
 subplot(3,1,1);
-plot(t, ref_roll_plot, 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
-plot(t, ang(1,:), 'LineWidth', grosor_linea, 'Color', '#031891');
-plot(t, ang_nn(1,1:len_t), 'LineWidth', grosor_linea, 'Color', '#04b304', 'LineStyle','--');
-ylabel('\phi (rad)'); title('Roll (Alabeo)');
+plot(t, rad2deg(ref_roll_plot), 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
+plot(t, rad2deg(ang(1,:)), 'LineWidth', grosor_linea, 'Color', '#031891');
+plot(t, rad2deg(ang_nn(1,1:len_t)), 'LineWidth', grosor_linea, 'Color', '#04b304', 'LineStyle','--');
+ylabel('\phi (°)'); title('Roll (Alabeo)');
 legend('Referencia','\phi (Real)','\phi n (Red)','Location','best');
 
 subplot(3,1,2);
-plot(t, ref_pitch_plot, 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
-plot(t, ang(2,:), 'LineWidth', grosor_linea, 'Color', '#031891');
-plot(t, ang_nn(2,1:len_t), 'LineWidth', grosor_linea, 'Color', '#04b304', 'LineStyle','--');
-ylabel('\theta (rad)'); title('Pitch (Cabeceo)');
+plot(t, rad2deg(ref_pitch_plot), 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
+plot(t, rad2deg(ang(2,:)), 'LineWidth', grosor_linea, 'Color', '#031891');
+plot(t, rad2deg(ang_nn(2,1:len_t)), 'LineWidth', grosor_linea, 'Color', '#04b304', 'LineStyle','--');
+ylabel('\theta (°)'); title('Pitch (Cabeceo)');
 legend('Referencia','\theta (Real)','\theta n (Red)','Location','best');
 
 subplot(3,1,3);
-plot(t, ref_yaw_plot, 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
-plot(t, ang(3,:), 'LineWidth', grosor_linea, 'Color', '#031891');
-plot(t, ang_nn(3,1:len_t), 'LineWidth', grosor_linea, 'Color', '#04b304', 'LineStyle','--');
-ylabel('\psi (rad)'); xlabel('Tiempo (s)'); title('Yaw (Guiñada)');
+plot(t, rad2deg(ref_yaw_plot), 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
+plot(t, rad2deg(ang(3,:)), 'LineWidth', grosor_linea, 'Color', '#031891');
+plot(t, rad2deg(ang_nn(3,1:len_t)), 'LineWidth', grosor_linea, 'Color', '#04b304', 'LineStyle','--');
+ylabel('\psi (°)'); xlabel('Tiempo (s)'); title('Yaw (Guiñada)');
 legend('Referencia','\psi (Real)','\psi n (Red)','Location','best');
 
 % --- 4. Dinámica Rotacional (Velocidades Angulares) ---

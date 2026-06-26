@@ -29,7 +29,7 @@ for k = 1:N
     % =====================================================================
 
     % El dron agarra un objeto entre t=15s y t=20s, lo que cambia su masa y su inercia
-    if t(k) >= 10 && t(k) < 10.5
+    if t(k) >= 8 && t(k) < 9
         tau_x_dist(k) = 0.08; % Simulación de torque/disturbio en x
         tau_y_dist(k) = 0.08; % Simulación de torque/disturbio en y
         tau_z_dist(k) = 0.08; % Simulación de torque/disturbio en z
@@ -70,10 +70,7 @@ for k = 1:N
     % --- PASO 2: Generación de Referencias Actuales ---
     % =====================================================================
     % Referencia de Yaw (Gira lentamente a lo largo del tiempo)
-    ref_yaw = (0.2 * t_ref * pi)*0;
-    % ref_yaw(k)   = 0.2 * t_ref(k) * pi; 
-    % ref_yaw(k+1) = 0.2 * t_ref(k+1) * pi; 
-    % ref_yaw(k+2) = 0.2 * t_ref(k+2) * pi; 
+    ref_yaw = (0.2 * t_ref * pi);
 
     % =====================================================================
     % --- PASO 3: Identificadores Neuronales y EKF ---
@@ -144,18 +141,6 @@ for k = 1:N
     ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn; % Dinámica de Y
     ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn; % Dinámica de X
 
-    % Asignación a vectores de referencia a roll y pitch independientes de la dinámica de X y Y
-    % if t(k) > 0 && t(k) < 15
-    %     ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn*0;
-    %     ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn*0;
-    % elseif t(k) >= 15 && t(k) < 25
-    %     ref_roll_rhonn(vector_indices)  = (ref_phi_calc_rhonn/ref_phi_calc_rhonn)*deg2rad(0);
-    %     ref_pitch_rhonn(vector_indices) = (ref_theta_calc_rhonn/ref_theta_calc_rhonn)*deg2rad(0);
-    % else
-    %     ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn*0;
-    %     ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn*0;
-    % end
-
     % =============================================================================
     % --- PASO 6: Control de Rotación (Lazo Interno Roll, Pitch, Yaw) ---
     % =============================================================================
@@ -183,115 +168,141 @@ end
 % =========================================================================
     % --- SEGUNDA SIMULACIÓN: CONTROL PID DISCRETO (SIN COMPENSACIÓN) ---
     % =========================================================================
-    fprintf('Iniciando segunda simulación (Control PID Puro)...\n');
+fprintf('Iniciando segunda simulación (Control PID Puro)...\n');
 
-    % 1. Inicialización de estado independiente
-    S_pid = [0; 0; 0; 0; 0; 0; ang(1,1); ang(2,1); ang(3,1); 0; 0; 0]; % [x; vx; y; vy; z; vz; phi; theta; psi; wx; wy; wz]
+% 1. Inicialización de estado independiente
+S_pid = [0; 0; 0; 0; 0; 0; ang(1,1); ang(2,1); ang(3,1); 0; 0; 0]; % [x; vx; y; vy; z; vz; phi; theta; psi; wx; wy; wz]
 
-    x_pid = zeros(1, N+1); y_pid = zeros(1, N+1); z_pid = zeros(1, N+1);
-    vx_pid = zeros(1, N+1); vy_pid = zeros(1, N+1); vz_pid = zeros(1, N+1);
-    ang_pid = zeros(3, N+1); omega_pid = zeros(3, N+1);
-    U_pid = zeros(4, N+1); omega_motors_pid = zeros(4, N+1);
+x_pid = zeros(1, N+1); y_pid = zeros(1, N+1); z_pid = zeros(1, N+1);
+vx_pid = zeros(1, N+1); vy_pid = zeros(1, N+1); vz_pid = zeros(1, N+1);
+ang_pid = zeros(3, N+1); omega_pid = zeros(3, N+1);
+U_pid = zeros(4, N+1); omega_motors_pid = zeros(4, N+1);
 
-    % Empuje nominal base (hover) sin compensar ángulos ni masa extra
-    U_pid(1,1) = m * g; 
+% Empuje nominal base (hover) sin compensar ángulos ni masa extra
+U_pid(1,1) = m * g; 
 
-    % 2. Sintonización de Ganancias PID Puro (Podrías necesitar ajustarlas)
-    % Altura (Z)
-    kp_z = 25; kd_z = 10; ki_z = 5;
-    % Roll, Pitch, Yaw
-    kp_phi = 0.5; kd_phi = 0.1; ki_phi = 0.05;
-    kp_theta = 0.5; kd_theta = 0.1; ki_theta = 0.05;
-    kp_psi = 1.0; kd_psi = 0.2; ki_psi = 0.1;
+% 2. Sintonización de Ganancias PID Puro (Podrías necesitar ajustarlas)
+% Altura (Z), X y Y
+kp_z = 25; kd_z = 10; ki_z = 5;
+kp_x = 1.5; kd_x = 0.5; ki_x = 0.2;
+kp_y = 1.5; kd_y = 0.5; ki_y = 0.2;
 
-    % Variables de memoria
-    ei_z = 0; e_z_prev = 0;
-    ei_phi = 0; e_phi_prev = 0;
-    ei_theta = 0; e_theta_prev = 0;
-    ei_psi = 0; e_psi_prev = 0;
+% Roll, Pitch, Yaw
+kp_phi = 0.5; kd_phi = 0.1; ki_phi = 0.05;
+kp_theta = 0.5; kd_theta = 0.1; ki_theta = 0.05;
+kp_psi = 1.0; kd_psi = 0.2; ki_psi = 0.1;
 
-    for k = 1:N
-        % --- 3. Perturbaciones Físicas (Idénticas a la simulación 1) ---
-        if t(k) >= 10 && t(k) < 10.5
-            tau_x_dist_pid = 0.08;
-            tau_y_dist_pid = 0.08;
-            tau_z_dist_pid = 0.08;
-            Ix_k_pid = Ix_real(k); Iy_k_pid = Iy_real(k); Iz_k_pid = Iz_real(k);
-        elseif t(k) >= 15 && t(k) <= 20
-            tau_x_dist_pid = 0; tau_y_dist_pid = 0; tau_z_dist_pid = 0;
-            m_k_pid = m_real(k) * 2;
-            Ix_k_pid = Ix_real(k) * 1.6; 
-            Iy_k_pid = Iy_real(k) * 1.2; 
-            Iz_k_pid = Iz_real(k) * 1.4;
-        else
-            tau_x_dist_pid = 0; tau_y_dist_pid = 0; tau_z_dist_pid = 0;
-            m_k_pid = m_real(k);
-            Ix_k_pid = Ix_real(k); Iy_k_pid = Iy_real(k); Iz_k_pid = Iz_real(k);
-        end
+% Variables de memoria
+ei_z = 0; e_z_prev = 0;
+ei_x = 0; e_x_prev = 0;
+ei_y = 0; e_y_prev = 0;
+ei_phi = 0; e_phi_prev = 0;
+ei_theta = 0; e_theta_prev = 0;
+ei_psi = 0; e_psi_prev = 0;
+
+for k = 1:N
+    % --- 3. Perturbaciones Físicas (Idénticas a la simulación 1) ---
+    if t(k) >= 10 && t(k) < 10.5
+        tau_x_dist_pid = 0.08;
+        tau_y_dist_pid = 0.08;
+        tau_z_dist_pid = 0.08;
+        Ix_k_pid = Ix_real(k); Iy_k_pid = Iy_real(k); Iz_k_pid = Iz_real(k);
+    elseif t(k) >= 15 && t(k) <= 20
+        tau_x_dist_pid = 0; tau_y_dist_pid = 0; tau_z_dist_pid = 0;
+        m_k_pid = m_real(k) * 2;
+        Ix_k_pid = Ix_real(k) * 1.6; 
+        Iy_k_pid = Iy_real(k) * 1.2; 
+        Iz_k_pid = Iz_real(k) * 1.4;
+    else
+        tau_x_dist_pid = 0; tau_y_dist_pid = 0; tau_z_dist_pid = 0;
+        m_k_pid = m_real(k);
+        Ix_k_pid = Ix_real(k); Iy_k_pid = Iy_real(k); Iz_k_pid = Iz_real(k);
+    end
+    
+    Inertia_k_pid = [Ix_k_pid, Iy_k_pid, Iz_k_pid];
+    tau_dist_k_pid = [tau_x_dist_pid; tau_y_dist_pid; tau_z_dist_pid];
+
+    % --- 4. Dinámica Física (RK4) ---
+    for j = 1:M
+        k1_rk = drone_derivatives(S_pid, U_pid(:,k), m_k_pid, g, k_wind, Inertia_k_pid, tau_dist_k_pid);
+        k2_rk = drone_derivatives(S_pid + 0.5*dt_cont*k1_rk, U_pid(:,k), m_k_pid, g, k_wind, Inertia_k_pid, tau_dist_k_pid);
+        k3_rk = drone_derivatives(S_pid + 0.5*dt_cont*k2_rk, U_pid(:,k), m_k_pid, g, k_wind, Inertia_k_pid, tau_dist_k_pid);
+        k4_rk = drone_derivatives(S_pid + dt_cont*k3_rk, U_pid(:,k), m_k_pid, g, k_wind, Inertia_k_pid, tau_dist_k_pid);
         
-        Inertia_k_pid = [Ix_k_pid, Iy_k_pid, Iz_k_pid];
-        tau_dist_k_pid = [tau_x_dist_pid; tau_y_dist_pid; tau_z_dist_pid];
+        S_pid = S_pid + (dt_cont/6)*(k1_rk + 2*k2_rk + 2*k3_rk + k4_rk);
+    end
 
-        % --- 4. Dinámica Física (RK4) ---
-        for j = 1:M
-            k1_rk = drone_derivatives(S_pid, U_pid(:,k), m_k_pid, g, k_wind, Inertia_k_pid, tau_dist_k_pid);
-            k2_rk = drone_derivatives(S_pid + 0.5*dt_cont*k1_rk, U_pid(:,k), m_k_pid, g, k_wind, Inertia_k_pid, tau_dist_k_pid);
-            k3_rk = drone_derivatives(S_pid + 0.5*dt_cont*k2_rk, U_pid(:,k), m_k_pid, g, k_wind, Inertia_k_pid, tau_dist_k_pid);
-            k4_rk = drone_derivatives(S_pid + dt_cont*k3_rk, U_pid(:,k), m_k_pid, g, k_wind, Inertia_k_pid, tau_dist_k_pid);
-            
-            S_pid = S_pid + (dt_cont/6)*(k1_rk + 2*k2_rk + 2*k3_rk + k4_rk);
-        end
+    % Desempaquetar estados
+    x_pid(k+1) = S_pid(1);  vx_pid(k+1) = S_pid(2);
+    y_pid(k+1) = S_pid(3);  vy_pid(k+1) = S_pid(4);
+    z_pid(k+1) = S_pid(5);  vz_pid(k+1) = S_pid(6);
+    ang_pid(:,k+1)   = S_pid(7:9);    
+    omega_pid(:,k+1) = S_pid(10:12);
 
-        % Desempaquetar estados
-        x_pid(k+1) = S_pid(1);  vx_pid(k+1) = S_pid(2);
-        y_pid(k+1) = S_pid(3);  vy_pid(k+1) = S_pid(4);
-        z_pid(k+1) = S_pid(5);  vz_pid(k+1) = S_pid(6);
-        ang_pid(:,k+1)   = S_pid(7:9);    
-        omega_pid(:,k+1) = S_pid(10:12);
+    % --- 5. Extracción de Referencias ---
+    ref_z_k = target_z(k);
+    ref_x_k = target_x(k);
+    ref_y_k = target_y(k);
 
-        % --- 5. Extracción de Referencias ---
-        ref_z_k = target_z(k);
-        % Tomamos la misma referencia de ángulos que se generó para el RHONN
-        ref_roll_pid = ref_roll_rhonn; % Usamos el mismo vector de referencia de roll
-        ref_pitch_pid = ref_pitch_rhonn; % Usamos el mismo vector de referencia
-        ref_phi_k = ref_roll_pid(k);   
-        ref_theta_k = ref_pitch_pid(k);
-        ref_psi_k = ref_yaw(k); % En main_v3.m definiste ref_yaw como arreglo, usamos el índice (k)
+    % --- 6. Errores Discretos ---
+    e_z = ref_z_k - z_pid(k+1);
+    e_x = ref_x_k - x_pid(k+1);
+    e_y = ref_y_k - y_pid(k+1);
 
-        % --- 6. Errores Discretos ---
-        e_z = ref_z_k - z_pid(k+1);
-        e_phi = ref_phi_k - ang_pid(1, k+1);
-        e_theta = ref_theta_k - ang_pid(2, k+1);
-        e_psi = ref_psi_k - ang_pid(3, k+1);
+    % Derivadas
+    de_z = (e_z - e_z_prev) / dt;
+    de_x = (e_x - e_x_prev) / dt;
+    de_y = (e_y - e_y_prev) / dt;
 
-        % Derivadas
-        de_z = (e_z - e_z_prev) / dt;
-        de_phi = (e_phi - e_phi_prev) / dt;
-        de_theta = (e_theta - e_theta_prev) / dt;
-        de_psi = (e_psi - e_psi_prev) / dt;
-
-        % Integrales
-        ei_z = ei_z + e_z * dt;
-        ei_phi = ei_phi + e_phi * dt;
-        ei_theta = ei_theta + e_theta * dt;
-        ei_psi = ei_psi + e_psi * dt;
+    % Integrales
+    ei_z = ei_z + e_z * dt;
+    ei_x = ei_x + e_x * dt;
+    ei_y = ei_y + e_y * dt;
 
         % Memoria previa
-        e_z_prev = e_z; e_phi_prev = e_phi; 
-        e_theta_prev = e_theta; e_psi_prev = e_psi;
+    e_z_prev = e_z; e_x_prev = e_x; e_y_prev = e_y;
 
-        % --- 7. Control PID Puro (Sin Linealización) ---
-        % Solo sumamos la fuerza P+I+D al peso nominal estacionario
-        u_z_pid = kp_z * e_z + kd_z * de_z + ki_z * ei_z;
-        U_pid(1, k+1) = (m * g) + u_z_pid; 
-        
-        U_pid(2, k+1) = kp_phi * e_phi + kd_phi * de_phi + ki_phi * ei_phi;
-        U_pid(3, k+1) = kp_theta * e_theta + kd_theta * de_theta + ki_theta * ei_theta;
-        U_pid(4, k+1) = kp_psi * e_psi + kd_psi * de_psi + ki_psi * ei_psi;
+    % Solo sumamos la fuerza P+I+D al peso nominal estacionario
+    u_z_pid = kp_z * e_z + kd_z * de_z + ki_z * ei_z;
+    U_pid(1, k+1) = (m * g) + u_z_pid; 
+    ux_pid = kp_x * e_x + kd_x * de_x + ki_x * ei_x;
+    uy_pid = kp_y * e_y + kd_y * de_y + ki_y * ei_y;
 
-        % --- 8. Saturación de Motores ---
-        [U_pid(:,k+1), omega_motors_pid(:,k+1)] = saturacion_motors(U_pid(:,k+1), cT, d, cQ);
-    end
+    % Mapear fuerzas a ángulos de referencia (sin compensación)
+    ref_phi_k = (1/g) * (ux_pid * sin(ang_pid(3, k)) - uy_pid * cos(ang_pid(3, k)));
+    ref_theta_k = (1/g) * (ux_pid * cos(ang_pid(3, k)) + uy_pid * sin(ang_pid(3, k)));
+    ref_psi_k = ref_yaw(k); % Referencia de Yaw (Gira lentamente a lo largo del tiempo);
+
+    vector_indices = k : min(k+2, length(ref_roll_rhonn));
+    ref_roll_pid(vector_indices)  = ref_phi_k; % Dinámica de Y
+    ref_pitch_pid(vector_indices) = ref_theta_k; % Dinámica de X
+
+    % --- 6. Errores Discretos ---
+    e_phi = ref_phi_k - ang_pid(1, k+1);
+    e_theta = ref_theta_k - ang_pid(2, k+1);
+    e_psi = ref_psi_k - ang_pid(3, k+1);
+
+    % Derivadas
+    de_phi = (e_phi - e_phi_prev) / dt;
+    de_theta = (e_theta - e_theta_prev) / dt;
+    de_psi = (e_psi - e_psi_prev) / dt;
+
+    % Integrales
+    ei_phi = ei_phi + e_phi * dt;
+    ei_theta = ei_theta + e_theta * dt;
+    ei_psi = ei_psi + e_psi * dt;
+
+    % Memoria previa
+    e_phi_prev = e_phi; e_theta_prev = e_theta; e_psi_prev = e_psi;
+
+    % --- 7. Control PID Puro (Sin Linealización) ---        
+    U_pid(2, k+1) = kp_phi * e_phi + kd_phi * de_phi + ki_phi * ei_phi;
+    U_pid(3, k+1) = kp_theta * e_theta + kd_theta * de_theta + ki_theta * ei_theta;
+    U_pid(4, k+1) = kp_psi * e_psi + kd_psi * de_psi + ki_psi * ei_psi;
+
+    % --- 8. Saturación de Motores ---
+    [U_pid(:,k+1), omega_motors_pid(:,k+1)] = saturacion_motors(U_pid(:,k+1), cT, d, cQ);
+end
 fprintf('Simulación PID puro finalizada.\n');
 
 % =========================================================================

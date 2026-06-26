@@ -1,7 +1,7 @@
 function [ref_phi, ref_theta] = compensator(ux_des, uy_des, psi, u_z)
     % Saturación de Aceleración (Seguridad)
-    % Limitamos a ~2.5 m/s^2 (aprox 15 grados)
-    acc_sat = 2.5;
+    % Limitamos a ~3.0 m/s^2 (aprox 46° grados)
+    acc_sat = 3.7;
     ux_des = max(-acc_sat, min(acc_sat, ux_des));
     uy_des = max(-acc_sat, min(acc_sat, uy_des));
     
@@ -19,8 +19,8 @@ function [ref_phi, ref_theta] = compensator(ux_des, uy_des, psi, u_z)
     ref_theta =  acc_fwd / g; % Pitch (+) mueve hacia adelante
     ref_phi   =  acc_lat / g; % Roll (+) mueve hacia la derecha (verifica la física)
 
-    % 4. Saturación por seguridad (Máximo ~20 grados)
-    max_ang = deg2rad(90);
+    % 4. Saturación por seguridad (Máximo ~30 grados)
+    max_ang = deg2rad(35);
     ref_theta = max(-max_ang, min(max_ang, ref_theta));
     ref_phi   = max(-max_ang, min(max_ang, ref_phi));
 

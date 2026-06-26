@@ -10,7 +10,7 @@ function [XN1_next, XN2_next, H, Iwu, Iwx] = rhonn_model_y_dynamic(x_now, v_now,
 
     %Input Weight
     Iw13= 0.0001; %0.008; %0.08
-    Iw24= 1; %0.09; %0.9
+    Iw24= 10; %0.09; %0.9
 
     %Update Neural States
     XN1_next = (w1'*C1) + (Iw13*x2k);
