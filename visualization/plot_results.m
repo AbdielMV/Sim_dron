@@ -218,6 +218,245 @@ subplot(2,2,2); plot(t, RPM_motors(2,1:len_t),'LineWidth', grosor_linea); grid o
 subplot(2,2,3); plot(t, RPM_motors(3,1:len_t),'LineWidth', grosor_linea); grid on; ylabel('RPM'); xlabel('Tiempo (s)'); title('W3');
 subplot(2,2,4); plot(t, RPM_motors(4,1:len_t),'LineWidth', grosor_linea); grid on; ylabel('RPM'); xlabel('Tiempo (s)'); title('W4');
 
+%% ========================================================================
+% GRÁFICAS EXCLUSIVAS DEL CONTROLADOR PID (COMPARATIVA)
+% =========================================================================
+
+% Ajuste de vectores para el PID
+x_pid_plot = x_pid(1:len_t);
+y_pid_plot = y_pid(1:len_t);
+z_pid_plot = z_pid(1:len_t);
+
+ref_roll_pid_plot = ref_roll_pid(1:len_t);
+ref_pitch_pid_plot = ref_pitch_pid(1:len_t);
+
+color_pid = '#FF8C00'; % Naranja distintivo para el PID
+
+% --- 1. PID: Dinámica Traslacional (Posiciones) ---
+figure('Name','PID - Traslacional Posiciones');
+subplot(3,1,1);
+plot(t, ref_x_plot, 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
+plot(t, x_pid_plot, 'LineWidth', grosor_linea, 'Color', color_pid);
+legend('Referencia','x (PID)','Location','best');
+ylabel('x (m)'); title('PID - Dinámica X');
+
+subplot(3,1,2);
+plot(t, ref_y_plot, 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
+plot(t, y_pid_plot, 'LineWidth', grosor_linea, 'Color', color_pid);
+legend('Referencia','y (PID)','Location','best');
+ylabel('y (m)'); title('PID - Dinámica Y');
+
+subplot(3,1,3);
+plot(t, ref_z_plot, 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
+plot(t, z_pid_plot, 'LineWidth', grosor_linea, 'Color', color_pid);
+legend('Referencia','z (PID)','Location','best');
+ylabel('z (m)'); xlabel('Tiempo (s)'); title('PID - Dinámica Z');
+
+% --- 2. PID: Dinámica Rotacional (Ángulos) ---
+figure('Name', 'PID - Rotacional Ángulos');
+subplot(3,1,1);
+plot(t, ref_roll_pid_plot, 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
+plot(t, ang_pid(1,1:len_t), 'LineWidth', grosor_linea, 'Color', color_pid);
+ylabel('\phi (rad)'); title('PID - Roll (Alabeo)');
+legend('Referencia Lazo Ext.','\phi (PID)','Location','best');
+
+subplot(3,1,2);
+plot(t, ref_pitch_pid_plot, 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
+plot(t, ang_pid(2,1:len_t), 'LineWidth', grosor_linea, 'Color', color_pid);
+ylabel('\theta (rad)'); title('PID - Pitch (Cabeceo)');
+legend('Referencia Lazo Ext.','\theta (PID)','Location','best');
+
+subplot(3,1,3);
+plot(t, ref_yaw_plot, 'LineWidth', grosor_linea, 'Color', '#FF0000'); hold on; grid on;
+plot(t, ang_pid(3,1:len_t), 'LineWidth', grosor_linea, 'Color', color_pid);
+ylabel('\psi (rad)'); xlabel('Tiempo (s)'); title('PID - Yaw (Guiñada)');
+legend('Referencia','\psi (PID)','Location','best');
+
+% --- 3. PID: Velocidad de Motores (RPM) ---
+figure('Name','PID - Velocidad de motores')
+RPM_motors_pid = omega_motors_pid * (60 / (2*pi)); % Conversión a RPM
+
+subplot(2,2,1); 
+plot(t, RPM_motors_pid(1,1:len_t),'LineWidth', grosor_linea, 'Color', color_pid); 
+grid on; ylabel('RPM'); xlabel('Tiempo (s)'); title('Motor 1 (PID)');
+
+subplot(2,2,2); 
+plot(t, RPM_motors_pid(2,1:len_t),'LineWidth', grosor_linea, 'Color', color_pid); 
+grid on; ylabel('RPM'); xlabel('Tiempo (s)'); title('Motor 2 (PID)');
+
+subplot(2,2,3); 
+plot(t, RPM_motors_pid(3,1:len_t),'LineWidth', grosor_linea, 'Color', color_pid); 
+grid on; ylabel('RPM'); xlabel('Tiempo (s)'); title('Motor 3 (PID)');
+
+subplot(2,2,4); 
+plot(t, RPM_motors_pid(4,1:len_t),'LineWidth', grosor_linea, 'Color', color_pid); 
+grid on; ylabel('RPM'); xlabel('Tiempo (s)'); title('Motor 4 (PID)');
+
+% =========================================================================
+% SCRIPT DE VISUALIZACIÓN COMPARATIVA (RHONN vs PID) - 6 DoF
+% =========================================================================
+disp('Generando gráficas comparativas...');
+
+% 1. Ajuste de longitudes de vectores (Recorte al tamaño de 't')
+len_t = length(t);
+
+% --- Referencias Globales ---
+ref_x_plot = target_x(1:len_t);
+ref_y_plot = target_y(1:len_t);
+ref_z_plot = target_z(1:len_t);
+ref_roll_plot  = ref_roll_rhonn(1:len_t); % Usamos la ref generada por RHONN como base
+ref_pitch_plot = ref_pitch_rhonn(1:len_t);
+ref_yaw_plot   = ref_yaw(1:len_t);
+
+% --- Estados Red Neuronal (RHONN) ---
+xn_plot = xn(1:len_t);
+yn_plot = yn(1:len_t);
+zn_plot = zn(1:len_t);
+ang_nn_roll_plot  = ang_nn(1, 1:len_t);
+ang_nn_pitch_plot = ang_nn(2, 1:len_t);
+ang_nn_yaw_plot   = ang_nn(3, 1:len_t);
+
+% --- Estados PID ---
+x_pid_plot = x_pid(1:len_t);
+y_pid_plot = y_pid(1:len_t);
+z_pid_plot = z_pid(1:len_t);
+ang_pid_roll_plot  = ang_pid(1, 1:len_t);
+ang_pid_pitch_plot = ang_pid(2, 1:len_t);
+ang_pid_yaw_plot   = ang_pid(3, 1:len_t);
+
+%% ========================================================================
+% CONFIGURACIÓN GLOBAL DE GRÁFICAS (FORMATO ARTÍCULO/TESIS)
+% =========================================================================
+tamano_letra = 14; 
+grosor_linea = 1.5; 
+
+set(groot, 'defaultAxesFontSize', tamano_letra);
+set(groot, 'defaultTextFontSize', tamano_letra);
+set(groot, 'defaultLegendFontSize', tamano_letra - 2); 
+set(groot, 'defaultAxesFontName', 'Times New Roman');
+set(groot, 'defaultTextFontName', 'Times New Roman');
+set(groot, 'defaultFigureColor', 'w');
+
+% Paleta de colores unificada
+c_ref   = '#FF0000';  % Rojo (Referencia)
+c_rhonn = '#031891';  % Azul oscuro (Planta con RHONN)
+c_red   = '#04b304';  % Verde (Estimación Neuronal)
+c_pid   = '#FF8C00';  % Naranja (Planta con PID Clásico)
+
+rad2deg_conv = 180 / pi;
+
+%% ==================== GRÁFICAS COMPARATIVAS ====================
+
+% --- FIGURA 1: TRAYECTORIA ESPACIAL 3D ---
+figure('Name', 'Trayectoria 3D Comparativa', 'NumberTitle', 'off');
+plot3(ref_x_plot, ref_y_plot, ref_z_plot, '--', 'Color', c_ref, 'LineWidth', grosor_linea); hold on;
+plot3(x(1:len_t), y(1:len_t), z(1:len_t), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea);
+plot3(x_pid_plot, y_pid_plot, z_pid_plot, '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+grid on;
+xlabel('Eje X [m]', 'FontWeight', 'bold'); 
+ylabel('Eje Y [m]', 'FontWeight', 'bold'); 
+zlabel('Eje Z (Altura) [m]', 'FontWeight', 'bold');
+title('Comparativa de Trayectoria Espacial 3D');
+legend('Referencia', 'Control RHONN', 'Control PID', 'Location', 'best');
+view(45, 30); 
+
+% --- FIGURA 2: DINÁMICA TRASLACIONAL (Posiciones) ---
+figure('Name','Traslación Comparativa');
+subplot(3,1,1);
+plot(t, ref_x_plot, '--', 'Color', c_ref, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, x(1:len_t), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea);
+plot(t, xn_plot, ':', 'Color', c_red, 'LineWidth', grosor_linea);
+plot(t, x_pid_plot, '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+legend('Referencia','Dron (RHONN)','Red (Identificador)','Dron (PID)','Location','best');
+ylabel('X (m)'); title('Seguimiento en el Eje X');
+
+subplot(3,1,2);
+plot(t, ref_y_plot, '--', 'Color', c_ref, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, y(1:len_t), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea); 
+plot(t, yn_plot, ':', 'Color', c_red, 'LineWidth', grosor_linea);
+plot(t, y_pid_plot, '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('Y (m)'); title('Seguimiento en el Eje Y');
+
+subplot(3,1,3);
+plot(t, ref_z_plot, '--', 'Color', c_ref, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, z(1:len_t), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea); 
+plot(t, zn_plot, ':', 'Color', c_red, 'LineWidth', grosor_linea);
+plot(t, z_pid_plot, '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('Z (m)'); xlabel('Tiempo (s)'); title('Seguimiento en el Eje Z (Altura)');
+
+% --- FIGURA 3: DINÁMICA ROTACIONAL (Ángulos Euler) ---
+figure('Name', 'Rotación Comparativa');
+subplot(3,1,1);
+plot(t, ref_roll_plot * rad2deg_conv, '--', 'Color', c_ref, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, ang(1,1:len_t) * rad2deg_conv, '-', 'Color', c_rhonn, 'LineWidth', grosor_linea);
+plot(t, ang_nn_roll_plot * rad2deg_conv, ':', 'Color', c_red, 'LineWidth', grosor_linea);
+plot(t, ang_pid_roll_plot * rad2deg_conv, '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('\phi (deg)'); title('Roll (Alabeo)');
+legend('Referencia','Dron (RHONN)','Red (Identificador)','Dron (PID)','Location','best');
+
+subplot(3,1,2);
+plot(t, ref_pitch_plot * rad2deg_conv, '--', 'Color', c_ref, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, ang(2,1:len_t) * rad2deg_conv, '-', 'Color', c_rhonn, 'LineWidth', grosor_linea);
+plot(t, ang_nn_pitch_plot * rad2deg_conv, ':', 'Color', c_red, 'LineWidth', grosor_linea);
+plot(t, ang_pid_pitch_plot * rad2deg_conv, '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('\theta (deg)'); title('Pitch (Cabeceo)');
+
+subplot(3,1,3);
+plot(t, ref_yaw_plot * rad2deg_conv, '--', 'Color', c_ref, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, ang(3,1:len_t) * rad2deg_conv, '-', 'Color', c_rhonn, 'LineWidth', grosor_linea);
+plot(t, ang_nn_yaw_plot * rad2deg_conv, ':', 'Color', c_red, 'LineWidth', grosor_linea);
+plot(t, ang_pid_yaw_plot * rad2deg_conv, '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('\psi (deg)'); xlabel('Tiempo (s)'); title('Yaw (Guiñada)');
+
+% --- FIGURA 4: ESFUERZO DE CONTROL (Torques Virtuales) ---
+figure('Name', 'Esfuerzo de Control (RHONN vs PID)');
+subplot(4,1,1);
+plot(t, U(1,1:len_t), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, U_pid(1,1:len_t), '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('U_1 (N)'); title('Empuje Z (Fuerza Vertical)');
+legend('RHONN', 'PID', 'Location', 'best');
+
+subplot(4,1,2);
+plot(t, U(2,1:len_t), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, U_pid(2,1:len_t), '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('U_2 (N\cdot m)'); title('Torque Roll');
+
+subplot(4,1,3);
+plot(t, U(3,1:len_t), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, U_pid(3,1:len_t), '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('U_3 (N\cdot m)'); title('Torque Pitch');
+
+subplot(4,1,4);
+plot(t, U(4,1:len_t), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, U_pid(4,1:len_t), '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('U_4 (N\cdot m)'); xlabel('Tiempo (s)'); title('Torque Yaw');
+
+% --- FIGURA 5: VELOCIDAD DE LOS MOTORES (RPM) ---
+figure('Name','Velocidad Motores Comparativa (RPM)')
+RPM_motors = omega_motors(1:4, 1:len_t) * (60 / (2*pi)); 
+RPM_motors_pid = omega_motors_pid(1:4, 1:len_t) * (60 / (2*pi));
+
+subplot(2,2,1); 
+plot(t, RPM_motors(1,:), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, RPM_motors_pid(1,:), '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('RPM'); title('Motor 1 (Front-Right)');
+legend('RHONN', 'PID', 'Location', 'best');
+
+subplot(2,2,2); 
+plot(t, RPM_motors(2,:), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, RPM_motors_pid(2,:), '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('RPM'); title('Motor 2 (Rear-Left)');
+
+subplot(2,2,3); 
+plot(t, RPM_motors(3,:), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, RPM_motors_pid(3,:), '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('RPM'); xlabel('Tiempo (s)'); title('Motor 3 (Front-Left)');
+
+subplot(2,2,4); 
+plot(t, RPM_motors(4,:), '-', 'Color', c_rhonn, 'LineWidth', grosor_linea); hold on; grid on;
+plot(t, RPM_motors_pid(4,:), '-.', 'Color', c_pid, 'LineWidth', grosor_linea);
+ylabel('RPM'); xlabel('Tiempo (s)'); title('Motor 4 (Rear-Right)');
+
 %% =========================================================================
 % EXPORTACIÓN AUTOMÁTICA DE TODAS LAS GRÁFICAS A FORMATO .EPS
 % =========================================================================
