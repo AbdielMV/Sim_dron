@@ -2,17 +2,14 @@
 function [XN1_next, XN2_next, H, Iwu, Iwx] = rhonn_model_y_dynamic(x_now, v_now, phi, psi, theta, u_now, w1_now, w2_now, dt, m)
     x1k = x_now;
     x2k = v_now;
-    x3k = phi;
-    x4k = psi;
-    x5k = theta;
     w1 = w1_now;
     w2 = w2_now;
 
     C1 = [sgm(x1k);1]; %Dim = 2
-    C2 = [sgm(x2k);sgm(x3k)*sgm(x5k)*sgm(x4k);-sgm(x4k)*sgm(x3k)]; %Dim = 3
+    C2 = [sgm(x2k);1;-1]; %Dim = 3
 
     %Input Weight
-    Iw13= 0.001; %0.008; %0.08
+    Iw13= 0.0001; %0.008; %0.08
     Iw24= 1; %0.09; %0.9
 
     %Update Neural States

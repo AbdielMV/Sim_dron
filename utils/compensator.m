@@ -20,7 +20,7 @@ function [ref_phi, ref_theta] = compensator(ux_des, uy_des, psi, u_z)
     ref_phi   =  acc_lat / g; % Roll (+) mueve hacia la derecha (verifica la física)
 
     % 4. Saturación por seguridad (Máximo ~20 grados)
-    max_ang = deg2rad(40);
+    max_ang = deg2rad(90);
     ref_theta = max(-max_ang, min(max_ang, ref_theta));
     ref_phi   = max(-max_ang, min(max_ang, ref_phi));
 

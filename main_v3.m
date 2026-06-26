@@ -15,11 +15,8 @@ target_x  = ref_total(1, :);
 target_y  = ref_total(2, :); 
 target_z  = ref_total(3, :); 
 vx_target = dref_total(1, :); 
-vy_target = dref_total(2, :);
-
-% Límite físico de inclinación (Gimbal Lock Protection)
-max_inclinacion = deg2rad(35); 
-
+vy_target = dref_total(2, :); 
+vz_target = dref_total(3, :);
 % =========================================================================
 % 3. BUCLE PRINCIPAL DE SIMULACIÓN
 % =========================================================================
@@ -73,7 +70,7 @@ for k = 1:N
     % --- PASO 2: Generación de Referencias Actuales ---
     % =====================================================================
     % Referencia de Yaw (Gira lentamente a lo largo del tiempo)
-    ref_yaw = 0.2 * t_ref * pi;
+    ref_yaw = (0.2 * t_ref * pi)*0;
     % ref_yaw(k)   = 0.2 * t_ref(k) * pi; 
     % ref_yaw(k+1) = 0.2 * t_ref(k+1) * pi; 
     % ref_yaw(k+2) = 0.2 * t_ref(k+2) * pi; 
@@ -137,25 +134,27 @@ for k = 1:N
     % --- PASO 5: Mapeo de Fuerzas a Ángulos (Compensador + Limites) ---
     % =====================================================================
     [ref_phi_calc_rhonn, ref_theta_calc_rhonn] = compensator(ux_des(k+1), uy_des(k+1), ang(3,k), U(1,k));
+    vector_indices = k : min(k+2, length(ref_roll_rhonn));
 
     % Protección contra Gimbal Lock y maniobras agresivas
-    ref_phi_calc_rhonn   = max(min(ref_phi_calc_rhonn, max_inclinacion), -max_inclinacion);
-    ref_theta_calc_rhonn = max(min(ref_theta_calc_rhonn, max_inclinacion), -max_inclinacion);
-    %ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn;
-    %ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn;
+    % Límite físico de inclinación (Gimbal Lock Protection)
+    % max_inclinacion = deg2rad(35);
+    % ref_phi_calc_rhonn   = max(min(ref_phi_calc_rhonn, max_inclinacion), -max_inclinacion);
+    % ref_theta_calc_rhonn = max(min(ref_theta_calc_rhonn, max_inclinacion), -max_inclinacion);
+    ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn; % Dinámica de Y
+    ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn; % Dinámica de X
 
-    % Asignación a vectores de referencia
-    vector_indices = k : min(k+2, length(ref_roll_rhonn));
-    if t(k) > 0 && t(k) < 15
-        ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn*0;
-        ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn*0;
-    elseif t(k) >= 15 && t(k) < 25
-        ref_roll_rhonn(vector_indices)  = (ref_phi_calc_rhonn/ref_phi_calc_rhonn)*deg2rad(0);
-        ref_pitch_rhonn(vector_indices) = (ref_theta_calc_rhonn/ref_theta_calc_rhonn)*deg2rad(0);
-    else
-        ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn*0;
-        ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn*0;
-    end
+    % Asignación a vectores de referencia a roll y pitch independientes de la dinámica de X y Y
+    % if t(k) > 0 && t(k) < 15
+    %     ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn*0;
+    %     ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn*0;
+    % elseif t(k) >= 15 && t(k) < 25
+    %     ref_roll_rhonn(vector_indices)  = (ref_phi_calc_rhonn/ref_phi_calc_rhonn)*deg2rad(0);
+    %     ref_pitch_rhonn(vector_indices) = (ref_theta_calc_rhonn/ref_theta_calc_rhonn)*deg2rad(0);
+    % else
+    %     ref_roll_rhonn(vector_indices)  = ref_phi_calc_rhonn*0;
+    %     ref_pitch_rhonn(vector_indices) = ref_theta_calc_rhonn*0;
+    % end
 
     % =============================================================================
     % --- PASO 6: Control de Rotación (Lazo Interno Roll, Pitch, Yaw) ---

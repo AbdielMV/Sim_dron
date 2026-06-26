@@ -154,12 +154,12 @@ w2_yaw = zeros(dim_set_2_yaw, N+1);
 % esto hace que los pesos cambien drásticamente con los primeros errores de predicción
 p1_x_dynamic = zeros(dim_set_1_x_dynamic, dim_set_1_x_dynamic, N+1);
 p2_x_dynamic = zeros(dim_set_2_x_dynamic, dim_set_2_x_dynamic, N+1);
-p1_x_dynamic(:,:,1) = eye(dim_set_1_x_dynamic) * 1e5;
+p1_x_dynamic(:,:,1) = eye(dim_set_1_x_dynamic) * 1e4;
 p2_x_dynamic(:,:,1) = eye(dim_set_2_x_dynamic) * 1e3;
 
 p1_y_dynamic = zeros(dim_set_1_y_dynamic, dim_set_1_y_dynamic, N+1);
 p2_y_dynamic = zeros(dim_set_2_y_dynamic, dim_set_2_y_dynamic, N+1);
-p1_y_dynamic(:,:,1) = eye(dim_set_1_y_dynamic) * 1e5;
+p1_y_dynamic(:,:,1) = eye(dim_set_1_y_dynamic) * 1e4;
 p2_y_dynamic(:,:,1) = eye(dim_set_2_y_dynamic) * 1e3;
 
 p1_z_dynamic = zeros(dim_set_1_z_dynamic, dim_set_1_z_dynamic, N+1);
@@ -188,13 +188,13 @@ p2_yaw(:,:,1) = eye(dim_set_2_yaw) * 1e3;
 % Si $Q$ es demasiado grande, los pesos nunca convergerán y oscilarán (ruido)
 Q1_x_dynamic = zeros(dim_set_1_x_dynamic, dim_set_1_x_dynamic, N+1);
 Q2_x_dynamic = zeros(dim_set_2_x_dynamic, dim_set_2_x_dynamic, N+1);
-Q1_x_dynamic(:,:,1) = eye(dim_set_1_x_dynamic) * 1e4;
-Q2_x_dynamic(:,:,1) = eye(dim_set_2_x_dynamic) * 3e2;
+Q1_x_dynamic(:,:,1) = eye(dim_set_1_x_dynamic) * 1e1;
+Q2_x_dynamic(:,:,1) = eye(dim_set_2_x_dynamic) * 5e1;
 
 Q1_y_dynamic = zeros(dim_set_1_y_dynamic, dim_set_1_y_dynamic, N+1);
 Q2_y_dynamic = zeros(dim_set_2_y_dynamic, dim_set_2_y_dynamic, N+1);
-Q1_y_dynamic(:,:,1) = eye(dim_set_1_y_dynamic) * 1e4;
-Q2_y_dynamic(:,:,1) = eye(dim_set_2_y_dynamic) * 3e2;
+Q1_y_dynamic(:,:,1) = eye(dim_set_1_y_dynamic) * 1e1;
+Q2_y_dynamic(:,:,1) = eye(dim_set_2_y_dynamic) * 5e1;
 
 Q1_z_dynamic = zeros(dim_set_1_z_dynamic, dim_set_1_z_dynamic, N+1);
 Q2_z_dynamic = zeros(dim_set_2_z_dynamic, dim_set_2_z_dynamic, N+1);
