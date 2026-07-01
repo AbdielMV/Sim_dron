@@ -20,7 +20,7 @@ Inertia = [Ix, Iy, Iz]; % Vector para pasar a la función
 % 2. CONFIGURACIÓN DE SIMULACIÓN Y MASAS
 % ==========================================
 dt = 1e-3; % Paso de tiempo (s)
-Tf = 30;       % Tiempo final
+Tf = 60;       % Tiempo final
 t  = 0:dt:Tf;
 N  = numel(t) - 1;
 cuarto_tiempo = round(N / 2); % Encuentra el índice K en la mitad
@@ -91,12 +91,16 @@ u_z_dynamic = m*g;
 U(1,1) = u_z_dynamic;
 
 % Condiciones iniciales x1 y x2 de la red
-zn(1) = 0;
-vzn(1) = 0;
+zn(1) = z(1);
+vzn(1) = vz(1);
+xn(1) = x(1);
+vxn(1) = vx(1);
+yn(1) = y(1);
+vyn(1) = vy(1);
 
 % Inicialización de Roll y Pitch
-ang(1,1) = deg2rad(-20);
-ang(2,1) = deg2rad(20);
+ang(1,1) = deg2rad(0);
+ang(2,1) = deg2rad(0);
 
 ang_nn(1,1) = ang(1,1);
 ang_nn(2,1) = ang(2,1);
@@ -126,40 +130,40 @@ dim_set_1_yaw = 2; %C1
 dim_set_2_yaw = 2; %C2
 
 % Inicialización Pesos Sinápticos X 
-w1_x_dynamic = zeros(dim_set_1_x_dynamic, N+1);
-w2_x_dynamic = zeros(dim_set_2_x_dynamic, N+1);
+w1_x_dynamic = ones(dim_set_1_x_dynamic, N+1)*rand(1,1);
+w2_x_dynamic = ones(dim_set_2_x_dynamic, N+1)*rand(1,1);
 
 % Inicialización Pesos Sinápticos Y
-w1_y_dynamic = zeros(dim_set_1_y_dynamic, N+1);
-w2_y_dynamic = zeros(dim_set_2_y_dynamic, N+1);
+w1_y_dynamic = ones(dim_set_1_y_dynamic, N+1)*rand(1,1);
+w2_y_dynamic = ones(dim_set_2_y_dynamic, N+1)*rand(1,1);
 
 % Inicialización Pesos Sinápticos Z 
-w1_z_dynamic = zeros(dim_set_1_z_dynamic, N+1);
-w2_z_dynamic = zeros(dim_set_2_z_dynamic, N+1);
+w1_z_dynamic = ones(dim_set_1_z_dynamic, N+1)*rand(1,1);
+w2_z_dynamic = ones(dim_set_2_z_dynamic, N+1)*rand(1,1);
 
 %Inicialización Pesos Sinápticos Roll
-w1_roll = zeros(dim_set_1_roll, N+1);
-w2_roll = zeros(dim_set_2_roll, N+1);
+w1_roll = ones(dim_set_1_roll, N+1)*rand(1,1);
+w2_roll = ones(dim_set_2_roll, N+1)*rand(1,1);
 
 %Inicialización Pesos Sinápticos Pitch
-w1_pitch = zeros(dim_set_1_pitch, N+1);
-w2_pitch = zeros(dim_set_2_pitch, N+1);
+w1_pitch = ones(dim_set_1_pitch, N+1)*rand(1,1);
+w2_pitch = ones(dim_set_2_pitch, N+1)*rand(1,1);
 
 %Inicialización Pesos Sinápticos Yaw
-w1_yaw = zeros(dim_set_1_yaw, N+1);
-w2_yaw = zeros(dim_set_2_yaw, N+1);
+w1_yaw = ones(dim_set_1_yaw, N+1)*rand(1,1);
+w2_yaw = ones(dim_set_2_yaw, N+1)*rand(1,1);
 
 % Inicialización p1 y p2 (Covarianza del error de predicción)
 % Un valor grande en la diagonal de $P$ indica alta incertidumbre,
 % esto hace que los pesos cambien drásticamente con los primeros errores de predicción
 p1_x_dynamic = zeros(dim_set_1_x_dynamic, dim_set_1_x_dynamic, N+1);
 p2_x_dynamic = zeros(dim_set_2_x_dynamic, dim_set_2_x_dynamic, N+1);
-p1_x_dynamic(:,:,1) = eye(dim_set_1_x_dynamic) * 1e4;
+p1_x_dynamic(:,:,1) = eye(dim_set_1_x_dynamic) * 1e5;
 p2_x_dynamic(:,:,1) = eye(dim_set_2_x_dynamic) * 1e3;
 
 p1_y_dynamic = zeros(dim_set_1_y_dynamic, dim_set_1_y_dynamic, N+1);
 p2_y_dynamic = zeros(dim_set_2_y_dynamic, dim_set_2_y_dynamic, N+1);
-p1_y_dynamic(:,:,1) = eye(dim_set_1_y_dynamic) * 1e4;
+p1_y_dynamic(:,:,1) = eye(dim_set_1_y_dynamic) * 1e5;
 p2_y_dynamic(:,:,1) = eye(dim_set_2_y_dynamic) * 1e3;
 
 p1_z_dynamic = zeros(dim_set_1_z_dynamic, dim_set_1_z_dynamic, N+1);
@@ -188,13 +192,13 @@ p2_yaw(:,:,1) = eye(dim_set_2_yaw) * 1e3;
 % Si $Q$ es demasiado grande, los pesos nunca convergerán y oscilarán (ruido)
 Q1_x_dynamic = zeros(dim_set_1_x_dynamic, dim_set_1_x_dynamic, N+1);
 Q2_x_dynamic = zeros(dim_set_2_x_dynamic, dim_set_2_x_dynamic, N+1);
-Q1_x_dynamic(:,:,1) = eye(dim_set_1_x_dynamic) * 1e1;
-Q2_x_dynamic(:,:,1) = eye(dim_set_2_x_dynamic) * 5e1;
+Q1_x_dynamic(:,:,1) = eye(dim_set_1_x_dynamic) * 1e4;
+Q2_x_dynamic(:,:,1) = eye(dim_set_2_x_dynamic) * 5e4;
 
 Q1_y_dynamic = zeros(dim_set_1_y_dynamic, dim_set_1_y_dynamic, N+1);
 Q2_y_dynamic = zeros(dim_set_2_y_dynamic, dim_set_2_y_dynamic, N+1);
-Q1_y_dynamic(:,:,1) = eye(dim_set_1_y_dynamic) * 1e1;
-Q2_y_dynamic(:,:,1) = eye(dim_set_2_y_dynamic) * 5e1;
+Q1_y_dynamic(:,:,1) = eye(dim_set_1_y_dynamic) * 1e4;
+Q2_y_dynamic(:,:,1) = eye(dim_set_2_y_dynamic) * 5e4;
 
 Q1_z_dynamic = zeros(dim_set_1_z_dynamic, dim_set_1_z_dynamic, N+1);
 Q2_z_dynamic = zeros(dim_set_2_z_dynamic, dim_set_2_z_dynamic, N+1);
@@ -281,4 +285,18 @@ ref_roll_rhonn  = zeros(1, N+2);
 ref_pitch_rhonn = zeros(1, N+2); 
 ref_yaw         = zeros(1, N+2);
 ref_roll_pid   = zeros(1, N+2);
-ref_pitch_pid  = zeros(1, N+2); 
+ref_pitch_pid  = zeros(1, N+2);
+
+% =========================================================================
+% INICIALIZACIÓN DSTD (Super Twisting Differentiator)
+% =========================================================================
+% Ganancias del STA (Deberás sintonizarlas. Típicamente k1 = 1.5*sqrt(L), k2 = 1.1*L)
+k1_sta = 8; 
+k2_sta = 15; 
+
+% Estados iniciales de los observadores (z1 = posición, z2 = velocidad)
+z1_phi = 0; z2_phi = 0;
+z1_theta = 0; z2_theta = 0;
+
+% Variables para evitar la singularidad estricta de la función sign() en 0 numérico
+epsilon_sta = 1e-4;

@@ -3,13 +3,7 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_roll(phi, w_x, theta, w_y, 
     x1k = phi;
     x1k_1 = phi_next;
     x2k   = w_x;
-    x2k_1 = w_x_next;
-    x3k = theta;
-    x3k_1 = theta_next;
-    x4k = w_y;
-    x4k_1 = w_y_next;
-    x5k = w_z;
-    x5k_1 = w_z_next;
+
     x1dk    = ref;
     x1dk_1  = ref_next;
     x1dk_2  = ref_two_next;
@@ -21,7 +15,7 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_roll(phi, w_x, theta, w_y, 
     e1k_1 = x1k_1 - x1dk_1;
     e2k  = (e1k_1 - e1k)/dt;
 
-    k1 = 2e4; k2 = 8e0;
+    k1 = 3e4; k2 = 8e0;
 
     % k1 = 2e4; k2 = 1e3; % Ganancias para Ref Constante
 

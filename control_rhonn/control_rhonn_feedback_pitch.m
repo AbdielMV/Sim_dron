@@ -14,7 +14,7 @@ function [e1k, e2k, u_next] = control_rhonn_feedback_pitch(theta, w_y, phi, w_x,
     e1k_1 = x1k_1 - x1dk_1;
     e2k  = (e1k_1 - e1k)/dt;
 
-    k1 = 2e4; k2 = 8e0; % Ganancias para Ref Constante
+    k1 = 3e4; k2 = 8e0; % Ganancias para Ref Constante
     
     % k1 = 1.99995;
 

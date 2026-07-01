@@ -6,9 +6,6 @@ function [XN1_next, XN2_next, H, Iwu, Iwx] = rhonn_model_pitch_dynamic(theta, om
     w2 = w2_now;
 
     %Define sets
-    % C1 = [sgm(x1k);1]; %Dim = 2
-    % C2 = [sgm(x2k);1;-g]; %Dim = 3
-
     C1 = [sgm(x1k);-1;1]; %Dim = 3
     C2 = [sgm(x2k);1;-1;1]; %Dim = 4
 

@@ -10,7 +10,7 @@ addpath('parameters', 'dynamics', 'control_rhonn', 'utils', 'visualization', 'ef
 run('init_system.m'); 
 
 % 2. Generación de Referencias Globales
-[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 2);
+[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 1);
 target_x  = ref_total(1, :); 
 target_y  = ref_total(2, :); 
 target_z  = ref_total(3, :); 
@@ -67,10 +67,10 @@ for k = 1:N
 
     elseif t(k) >= 15 && t(k) <= 20
 
-        tau_x_dist_pid = 0.0;
-        tau_y_dist_pid = 0.0;
-        tau_z_dist_pid = 0.0;
-        m_k_pid = m_real(k) * 1;
+        tau_x_dist_pid = 1.1;
+        tau_y_dist_pid = 1.1;
+        tau_z_dist_pid = .1;
+        m_k_pid = m_real(k) * 3;
         Ix_k_pid = Ix_real(k) * 1; 
         Iy_k_pid = Iy_real(k) * 1; 
         Iz_k_pid = Iz_real(k) * 1;
@@ -203,10 +203,10 @@ for k = 1:N
 
     elseif t(k) >=15 && t(k) <= 20
 
-        tau_x_dist = 0.0;
-        tau_y_dist = 0.0;
-        tau_z_dist = 0.0;
-        m_k = m_real(k) * 1;
+        tau_x_dist = 1.1;
+        tau_y_dist = 1.1;
+        tau_z_dist = 1.1;
+        m_k = m_real(k) * 3;
         Ix_k = Ix_real(k) * 1; 
         Iy_k = Iy_real(k) * 1; 
         Iz_k = Iz_real(k) * 1;
@@ -363,21 +363,21 @@ for k = 1:N
     ref_phi_k = ref_phi_k;
     ref_theta_k = ref_theta_k;
 
+    ref_roll_rhonn(k)   = ref_phi_k;
+    ref_roll_rhonn(k+1) = ref_phi_k;
+    ref_roll_rhonn(k+2) = ref_phi_k;
+    
+    ref_pitch_rhonn(k)   = ref_theta_k;
+    ref_pitch_rhonn(k+1) = ref_theta_k;
+    ref_pitch_rhonn(k+2) = ref_theta_k;
+    
     % ref_roll_rhonn(k)   = ref_phi_k;
-    % ref_roll_rhonn(k+1) = ref_phi_k;
-    % ref_roll_rhonn(k+2) = ref_phi_k;
+    % ref_roll_rhonn(k+1) = ref_phi_k + (dt*ref_phi_k);
+    % ref_roll_rhonn(k+2) = ref_phi_k + (2*dt*ref_phi_k);
     % 
     % ref_pitch_rhonn(k)   = ref_theta_k;
-    % ref_pitch_rhonn(k+1) = ref_theta_k;
-    % ref_pitch_rhonn(k+2) = ref_theta_k;
-    % 
-    ref_roll_rhonn(k)   = ref_phi_k;
-    ref_roll_rhonn(k+1) = ref_phi_k + (dt*ref_phi_k);
-    ref_roll_rhonn(k+2) = ref_phi_k + (2*dt*ref_phi_k);
-
-    ref_pitch_rhonn(k)   = ref_theta_k;
-    ref_pitch_rhonn(k+1) = ref_theta_k + (dt*ref_theta_k);
-    ref_pitch_rhonn(k+2) = ref_theta_k + (2*dt*ref_theta_k);
+    % ref_pitch_rhonn(k+1) = ref_theta_k + (dt*ref_theta_k);
+    % ref_pitch_rhonn(k+2) = ref_theta_k + (2*dt*ref_theta_k);
 
     % =============================================================================
     % --- PASO 6: Control de Rotación (Lazo Interno Roll, Pitch, Yaw) ---
