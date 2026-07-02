@@ -19,8 +19,8 @@ function [t_ref, ref, dref, ddref] = build_ref(dt, Tf, tipo_trayectoria)
         case 1 % ===== OPCIÓN: TRAYECTORIA CONSTANTE =====
             Frecuencia = 0.05;
             Omega = 2 * pi * Frecuencia;
-            ref(1, :) = 5.0 * ones(1,N); % Queremos ir a X = 5 metros
-            ref(2, :) = 5.0 * ones(1,N); % Queremos ir a Y = 5 metros
+            ref(1, :) = 10.0 * ones(1,N); % Queremos ir a X = 10 metros
+            ref(2, :) = 10.0 * ones(1,N); % Queremos ir a Y = 10 metros
             ref(3, :) = (sin(Omega*t_ref) + 0.5*t_ref); % Queremos mantener Z constante
 
             % Velocidad (Derivada numérica)
@@ -39,7 +39,7 @@ function [t_ref, ref, dref, ddref] = build_ref(dt, Tf, tipo_trayectoria)
             ddref(:, end) = ddref(:, end-1);
 
         case 2 % ===== OPCIÓN: CÍRCULO =====
-            Radio = 5.0;
+            Radio = 10.0;
             Frecuencia = 0.03;
             Omega = 2 * pi * Frecuencia;
 

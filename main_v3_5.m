@@ -10,7 +10,7 @@ addpath('parameters', 'dynamics', 'control_rhonn', 'utils', 'visualization', 'ef
 run('init_system.m'); 
 
 % 2. Generación de Referencias Globales
-[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 1);
+[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 2);
 target_x  = ref_total(1, :); 
 target_y  = ref_total(2, :); 
 target_z  = ref_total(3, :); 
@@ -55,11 +55,11 @@ ei_psi = 0; e_psi_prev = 0;
 
 for k = 1:N
     % --- 3. Perturbaciones Físicas (Idénticas a la simulación 1) ---
-    if t(k) >= 8 && t(k) < 9
+    if t(k) >= 11 && t(k) < 12
 
-        tau_x_dist_pid = 0.0; % Simulación de torque/perturbación en X
+        tau_x_dist_pid = 0.3; % Simulación de torque/perturbación en X
         tau_y_dist_pid = 0.0; % Simulación de torque/perturbación en Y
-        tau_z_dist_pid = 0.0; % Simulación de torque/perturbación en Z
+        tau_z_dist_pid = 0.3; % Simulación de torque/perturbación en Z
         m_k_pid = m_real(k) * 1; % Simulación cambio de masa
         Ix_k_pid = Ix_real(k) * 1; % Ajuste de inercia en X
         Iy_k_pid = Iy_real(k) * 1; % Ajuste de inercia en Y
@@ -67,10 +67,10 @@ for k = 1:N
 
     elseif t(k) >= 15 && t(k) <= 20
 
-        tau_x_dist_pid = 1.1;
-        tau_y_dist_pid = 1.1;
-        tau_z_dist_pid = .1;
-        m_k_pid = m_real(k) * 3;
+        tau_x_dist_pid = 0.0;
+        tau_y_dist_pid = 0.0;
+        tau_z_dist_pid = 0.0;
+        m_k_pid = m_real(k) * 1;
         Ix_k_pid = Ix_real(k) * 1; 
         Iy_k_pid = Iy_real(k) * 1; 
         Iz_k_pid = Iz_real(k) * 1;
@@ -138,8 +138,6 @@ for k = 1:N
 
     % Mapear fuerzas a ángulos de referencia (sin compensación)
     [ref_phi_k, ref_theta_k] = compensator(ux_pid, uy_pid, ang(3,k), U_pid(1,k));
-    % ref_phi_k = (1/g) * (ux_pid * sin(ang_pid(3, k)) - uy_pid * cos(ang_pid(3, k)));
-    % ref_theta_k = (1/g) * (ux_pid * cos(ang_pid(3, k)) + uy_pid * sin(ang_pid(3, k)));
     ref_psi_k = ref_yaw(k); % Referencia de Yaw (Gira lentamente a lo largo del tiempo);
 
     vector_indices = k : min(k+2, length(ref_roll_rhonn));
@@ -191,11 +189,11 @@ for k = 1:N
     % =====================================================================
 
     % Perturbaciones de 8 a 9 y en el tiempo 15 a 20
-    if t(k) >= 8 && t(k) < 9
+    if t(k) >= 11 && t(k) < 12
 
-        tau_x_dist = 0.0; % Simulación de torque/perturbación en X
+        tau_x_dist = 0.3; % Simulación de torque/perturbación en X
         tau_y_dist = 0.0; % Simulación de torque/perturbación en Y
-        tau_z_dist = 0.0; % Simulación de torque/perturbación en Z
+        tau_z_dist = 0.3; % Simulación de torque/perturbación en Z
         m_k = m_real(k) * 1; % Simulación cambio de masa
         Ix_k = Ix_real(k) * 1; % Ajuste de inercia en X
         Iy_k = Iy_real(k) * 1; % Ajuste de inercia en Y
@@ -203,10 +201,10 @@ for k = 1:N
 
     elseif t(k) >=15 && t(k) <= 20
 
-        tau_x_dist = 1.1;
-        tau_y_dist = 1.1;
-        tau_z_dist = 1.1;
-        m_k = m_real(k) * 3;
+        tau_x_dist = 0.0;
+        tau_y_dist = 0.0;
+        tau_z_dist = 0.0;
+        m_k = m_real(k) * 1;
         Ix_k = Ix_real(k) * 1; 
         Iy_k = Iy_real(k) * 1; 
         Iz_k = Iz_real(k) * 1;
@@ -292,35 +290,16 @@ for k = 1:N
     % --- PASO 4: Control de Traslación (Lazo Externo Z, X, Y) ---
     % =====================================================================
     [e1_z_dynamic(k), e2_z_dynamic(k), u_neural_rot(1,k+1)] = control_rhonn_feedback_z_dynamic(...
-        z(k+1), vz(k+1), ang(1,k), ang(2,k), zn(k+1), w1_z_dynamic(:,k), w2_z_dynamic(:,k), dt, Iwx_z_dynamic, Iwu_z_dynamic, target_z(k), target_z(k+1), target_z(k+2), m, g);
+        z(k+1), vz(k+1), ang(1,k), ang(2,k), zn(k+1), w1_z_dynamic(:,k+1), w2_z_dynamic(:,k+1), dt, Iwx_z_dynamic, Iwu_z_dynamic, target_z(k), target_z(k+1), target_z(k+2), m, g);
 
     [e1_x_dynamic(k), e2_x_dynamic(k), ux_des(k+1)] = control_rhonn_feedback_x_dynamic(...
-        x(k+1), vx(k+1), ang(1,k), ang(3,k), ang(2,k), xn(k+1), w1_x_dynamic(:,k), w2_x_dynamic(:,k), dt, Iwx_x_dynamic, Iwu_x_dynamic, target_x(k), target_x(k+1), target_x(k+2), m, g, ex_sum);
+        x(k+1), vx(k+1), ang(1,k), ang(3,k), ang(2,k), xn(k+1), w1_x_dynamic(:,k+1), w2_x_dynamic(:,k+1), dt, Iwx_x_dynamic, Iwu_x_dynamic, target_x(k), target_x(k+1), target_x(k+2), m, g, ex_sum);
     ex_sum = ex_sum + e1_x_dynamic(k); 
 
     [e1_y_dynamic(k), e2_y_dynamic(k), uy_des(k+1)] = control_rhonn_feedback_y_dynamic(...
-        y(k+1), vy(k+1), ang(1,k), ang(3,k), ang(2,k), yn(k+1), w1_y_dynamic(:,k), w2_y_dynamic(:,k), dt, Iwx_y_dynamic, Iwu_y_dynamic, target_y(k), target_y(k+1), target_y(k+2), m, g, ey_sum);
+        y(k+1), vy(k+1), ang(1,k), ang(3,k), ang(2,k), yn(k+1), w1_y_dynamic(:,k+1), w2_y_dynamic(:,k+1), dt, Iwx_y_dynamic, Iwu_y_dynamic, target_y(k), target_y(k+1), target_y(k+2), m, g, ey_sum);
     ey_sum = ey_sum + e1_y_dynamic(k); 
-    
-    % Ganancias PID
-    % kp_pos = 4.0; % Ganancia proporcional
-    % kd_pos = 3.5; % Ganancia derivativa
-    % 
-    % % 1. Cálculo de Errores de Posición y Velocidad
-    % e_x = target_x(k) - x(k+1);
-    % de_x = (e_x - e_x_prev) / dt;
-    % 
-    % e_y = target_y(k) - y(k+1);
-    % de_y = (e_y - e_y_prev) / dt;
-    % 
-    % % Memoria previa
-    % e_x_prev = e_x; e_y_prev = e_y;
 
-    % 2. Esfuerzo de Control PD (Fuerza Deseada)
-    % Multiplicamos por la masa 'm' porque tu función compensator espera fuerzas
-    % Sumamos el feedforward (ddref_total) para eliminar el retraso de fase
-    % ux_des(k+1) = m * (kp_pos * e_x + kd_pos * de_x);
-    % uy_des(k+1) = m * (kp_pos * e_y + kd_pos * de_y);
     ux_des(k+1) = m * (ux_des(k+1));
     uy_des(k+1) = m * (uy_des(k+1));
 
@@ -331,34 +310,6 @@ for k = 1:N
     % --- Instante actual (k) ---
     [ref_phi_k, ref_theta_k] = compensator(ux_des(k+1), uy_des(k+1), ang(3,k), U(1,k));
     
-    % inv_g = 1 / g; psi_k = ang(3, k); % Ángulo Yaw actual
-    % 
-    % % 1. Inversión Algebraica (Ángulos deseados "crudos" en el instantek) 
-    % theta_raw_k = inv_g * (ux_des(k+1) * cos(psi_k) + uy_des(k+1) * sin(psi_k));
-    % phi_raw_k   = inv_g * (ux_des(k+1) * sin(psi_k) - uy_des(k+1) * cos(psi_k));
-    % 
-    % % 2. Filtrado y Extracción de Derivadas (DSTD para Roll / Eje Y)
-    % [z1_phi, z2_phi, phi_k, phi_k1, phi_k2] = dstd_step(...
-    %     phi_raw_k, z1_phi, z2_phi, k1_sta, k2_sta, dt, epsilon_sta);
-    % 
-    % % 3. Filtrado y Extracción de Derivadas (DSTD para Pitch / Eje X)
-    % [z1_theta, z2_theta, theta_k, theta_k1, theta_k2] = dstd_step(...
-    %     theta_raw_k, z1_theta, z2_theta, k1_sta, k2_sta, dt, epsilon_sta);
-    % 
-    % % 4. Saturación (Protección contra maniobras que excedan la aerodinámica) 
-    % max_inclinacion = deg2rad(35);
-    % 
-    % % 5. Asignación directa al vector de referencias para el controlador RHONN 
-    % ref_roll_rhonn(k)   = max(min(phi_k, max_inclinacion), -max_inclinacion); 
-    % ref_roll_rhonn(k+1) = max(min(phi_k1, max_inclinacion), -max_inclinacion); 
-    % ref_roll_rhonn(k+2) = max(min(phi_k2, max_inclinacion), -max_inclinacion);
-    % 
-    % ref_pitch_rhonn(k)   = max(min(theta_k, max_inclinacion), -max_inclinacion); 
-    % ref_pitch_rhonn(k+1) = max(min(theta_k1, max_inclinacion), -max_inclinacion); 
-    % ref_pitch_rhonn(k+2) = max(min(theta_k2, max_inclinacion), -max_inclinacion);
-
-    % Leemos los ángulos deseados exactos que el PID generó en este mismo instante,
-    % y los asignamos como la referencia que el controlador RHONN debe seguir.
 
     ref_phi_k = ref_phi_k;
     ref_theta_k = ref_theta_k;
@@ -370,11 +321,11 @@ for k = 1:N
     ref_pitch_rhonn(k)   = ref_theta_k;
     ref_pitch_rhonn(k+1) = ref_theta_k;
     ref_pitch_rhonn(k+2) = ref_theta_k;
-    
+ 
     % ref_roll_rhonn(k)   = ref_phi_k;
     % ref_roll_rhonn(k+1) = ref_phi_k + (dt*ref_phi_k);
     % ref_roll_rhonn(k+2) = ref_phi_k + (2*dt*ref_phi_k);
-    % 
+
     % ref_pitch_rhonn(k)   = ref_theta_k;
     % ref_pitch_rhonn(k+1) = ref_theta_k + (dt*ref_theta_k);
     % ref_pitch_rhonn(k+2) = ref_theta_k + (2*dt*ref_theta_k);
@@ -383,13 +334,13 @@ for k = 1:N
     % --- PASO 6: Control de Rotación (Lazo Interno Roll, Pitch, Yaw) ---
     % =============================================================================
     [e1_roll(k), e2_roll(k), u_neural_rot(2,k+1)] = control_rhonn_feedback_roll(...
-        ang(1,k+1), omega(1,k+1), ang(2,k), omega(2,k), omega(3,k), ang_nn(1,k+1), omega_nn(1,k), ang_nn(2,k), omega_nn(2,k), omega_nn(3,k), w1_roll(:,k), w2_roll(:,k), dt, Iwx_roll, Iwu_roll, ref_roll_rhonn(k), ref_roll_rhonn(k+1), ref_roll_rhonn(k+2));
+        ang(1,k+1), omega(1,k+1), ang(2,k), omega(2,k), omega(3,k), ang_nn(1,k+1), omega_nn(1,k), ang_nn(2,k), omega_nn(2,k), omega_nn(3,k), w1_roll(:,k+1), w2_roll(:,k+1), dt, Iwx_roll, Iwu_roll, ref_roll_rhonn(k), ref_roll_rhonn(k+1), ref_roll_rhonn(k+2));
 
     [e1_pitch(k), e2_pitch(k), u_neural_rot(3,k+1)] = control_rhonn_feedback_pitch(...
-        ang(2,k+1), omega(2,k+1), ang(1,k), omega(1,k), omega(3,k), ang_nn(2,k+1), omega_nn(2,k), ang_nn(1,k), omega_nn(1,k), omega_nn(3,k), w1_pitch(:,k), w2_pitch(:,k), dt, Iwx_pitch, Iwu_pitch, ref_pitch_rhonn(k), ref_pitch_rhonn(k+1), ref_pitch_rhonn(k+2));
+        ang(2,k+1), omega(2,k+1), ang(1,k), omega(1,k), omega(3,k), ang_nn(2,k+1), omega_nn(2,k), ang_nn(1,k), omega_nn(1,k), omega_nn(3,k), w1_pitch(:,k+1), w2_pitch(:,k+1), dt, Iwx_pitch, Iwu_pitch, ref_pitch_rhonn(k), ref_pitch_rhonn(k+1), ref_pitch_rhonn(k+2));
 
     [e1_yaw(k), e2_yaw(k), u_neural_rot(4,k+1)] = control_rhonn_feedback_yaw(...
-        ang(3,k+1), omega(3,k+1), ang(1,k), ang(2,k), omega(1,k), omega(2,k), ang_nn(3,k+1), omega_nn(3,k), ang_nn(1,k), ang_nn(2,k), omega_nn(1,k), omega_nn(2,k), w1_yaw(:,k), w2_yaw(:,k), dt, Iwx_yaw, Iwu_yaw, ref_yaw(k), ref_yaw(k+1), ref_yaw(k+2));
+        ang(3,k+1), omega(3,k+1), ang(1,k), ang(2,k), omega(1,k), omega(2,k), ang_nn(3,k+1), omega_nn(3,k), ang_nn(1,k), ang_nn(2,k), omega_nn(1,k), omega_nn(2,k), w1_yaw(:,k+1), w2_yaw(:,k+1), dt, Iwx_yaw, Iwu_yaw, ref_yaw(k), ref_yaw(k+1), ref_yaw(k+2));
 
     %u_neural_rot(1,k+1) = m_k*g; % Desactivando control de Z (Mantener Altura)
     %u_neural_rot(2,k+1) = 0; % Desactivando control de Roll
