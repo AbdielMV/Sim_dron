@@ -10,7 +10,7 @@ addpath('parameters', 'dynamics', 'control_rhonn', 'utils', 'visualization', 'ef
 run('init_system.m'); 
 
 % 2. Generación de Referencias Globales
-[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 2);
+[t_ref, ref_total, dref_total, ddref_total] = build_ref(dt, Tf, 3);
 target_x  = ref_total(1, :); 
 target_y  = ref_total(2, :); 
 target_z  = ref_total(3, :); 
@@ -54,33 +54,49 @@ ei_theta = 0; e_theta_prev = 0;
 ei_psi = 0; e_psi_prev = 0;
 
 for k = 1:N
-    % --- 3. Perturbaciones Físicas (Idénticas a la simulación 1) ---
-    if t(k) >= 11 && t(k) < 12
 
-        tau_x_dist_pid = 0.3; % Simulación de torque/perturbación en X
-        tau_y_dist_pid = 0.0; % Simulación de torque/perturbación en Y
-        tau_z_dist_pid = 0.3; % Simulación de torque/perturbación en Z
-        m_k_pid = m_real(k) * 1; % Simulación cambio de masa
-        Ix_k_pid = Ix_real(k) * 1; % Ajuste de inercia en X
-        Iy_k_pid = Iy_real(k) * 1; % Ajuste de inercia en Y
-        Iz_k_pid = Iz_real(k) * 1; % Ajuste de inercia en Z
+    % =====================================================================
+    % --- PERTURBACIONES FÍSICAS EXTREMAS ---
+    % =====================================================================
+    if t(k) >= 10 && t(k) < 12
+        
+        % EVENTO 1: Ráfagas de viento cruzado severo
+        % Usamos una señal senoidal para simular turbulencia caótica
+        tau_x_dist_pid = 0.4 * sin(2*pi * t(k)); % Turbulencia oscilatoria intentando voltearlo en Roll
+        tau_y_dist_pid = -0.5 * cos(2*pi * t(k));                   % Ráfaga de viento constante golpeando en Pitch
+        tau_z_dist_pid = 0.05 * rand(1,1);          % Ligera turbulencia aleatoria afectando el Yaw
+        
+        % Masa e inercias siguen siendo las nominales
+        m_k_pid  = m_real(k); 
+        Ix_k_pid = Ix_real(k); 
+        Iy_k_pid = Iy_real(k); 
+        Iz_k_pid = Iz_real(k);
 
-    elseif t(k) >= 15 && t(k) <= 20
-
-        tau_x_dist_pid = 0.0;
-        tau_y_dist_pid = 0.0;
-        tau_z_dist_pid = 0.0;
-        m_k_pid = m_real(k) * 1;
-        Ix_k_pid = Ix_real(k) * 1; 
-        Iy_k_pid = Iy_real(k) * 1; 
-        Iz_k_pid = Iz_real(k) * 1;
+    elseif t(k) >= 12 && t(k) <= 20
+        
+        % EVENTO 2: Recolección de paquete pesado con geometría asimétrica
+        % El viento cesa, pero la dinámica del dron cambia abruptamente
+        tau_x_dist_pid = 0.4 * sin(2*pi * t(k));
+        tau_y_dist_pid = -0.5 * cos(2*pi * t(k));
+        tau_z_dist_pid = 0.1 * rand(1,1);
+        
+        % Aumento de masa del 40% (ej. el paquete es pesado)
+        m_k_pid = m_real(k) * 1.4; 
+        
+        % Cambio asimétrico de inercias ("Geometría extraña")
+        % Simulamos un paquete alargado a lo largo del eje Y
+        Ix_k_pid = Ix_real(k) * 1.2; % Inercia en X sube 20%
+        Iy_k_pid = Iy_real(k) * 1.8; % Inercia en Y sube 80% (Cuesta mucho más cabecear)
+        Iz_k_pid = Iz_real(k) * 1.5; % Inercia en Z sube 50%
 
     else
-
+        
+        % VUELO NOMINAL (t < 10 segundos)
         tau_x_dist_pid = 0.0;
         tau_y_dist_pid = 0.0;
         tau_z_dist_pid = 0.0;
-        m_k_pid = m_real(k);
+        
+        m_k_pid  = m_real(k);
         Ix_k_pid = Ix_real(k); 
         Iy_k_pid = Iy_real(k); 
         Iz_k_pid = Iz_real(k);
@@ -188,33 +204,48 @@ for k = 1:N
     % --- PASO 1: Dinámica Física Real (RK4 Multi-Tasa) ---
     % =====================================================================
 
-    % Perturbaciones de 8 a 9 y en el tiempo 15 a 20
-    if t(k) >= 11 && t(k) < 12
+   % =====================================================================
+    % --- PERTURBACIONES FÍSICAS EXTREMAS ---
+    % =====================================================================
+    if t(k) >= 10 && t(k) < 12
+        
+        % EVENTO 1: Ráfagas de viento cruzado severo
+        % Usamos una señal senoidal para simular turbulencia caótica
+        tau_x_dist = 0.4 * sin(2*pi * t(k)); % Turbulencia oscilatoria intentando voltearlo en Roll
+        tau_y_dist = -0.5 * cos(2*pi * t(k));                   % Ráfaga de viento constante golpeando en Pitch
+        tau_z_dist = 0.05 * rand(1,1);          % Ligera turbulencia aleatoria afectando el Yaw
+        
+        % Masa e inercias siguen siendo las nominales
+        m_k  = m_real(k); 
+        Ix_k = Ix_real(k); 
+        Iy_k = Iy_real(k); 
+        Iz_k = Iz_real(k);
 
-        tau_x_dist = 0.3; % Simulación de torque/perturbación en X
-        tau_y_dist = 0.0; % Simulación de torque/perturbación en Y
-        tau_z_dist = 0.3; % Simulación de torque/perturbación en Z
-        m_k = m_real(k) * 1; % Simulación cambio de masa
-        Ix_k = Ix_real(k) * 1; % Ajuste de inercia en X
-        Iy_k = Iy_real(k) * 1; % Ajuste de inercia en Y
-        Iz_k = Iz_real(k) * 1; % Ajuste de inercia en Z
-
-    elseif t(k) >=15 && t(k) <= 20
-
-        tau_x_dist = 0.0;
-        tau_y_dist = 0.0;
-        tau_z_dist = 0.0;
-        m_k = m_real(k) * 1;
-        Ix_k = Ix_real(k) * 1; 
-        Iy_k = Iy_real(k) * 1; 
-        Iz_k = Iz_real(k) * 1;
+    elseif t(k) >= 12 && t(k) <= 20
+        
+        % EVENTO 2: Recolección de paquete pesado con geometría asimétrica
+        % El viento cesa, pero la dinámica del dron cambia abruptamente
+        tau_x_dist = 0.4 * sin(2*pi * t(k));
+        tau_y_dist = -0.5 * cos(2*pi * t(k));
+        tau_z_dist = 0.1 * rand(1,1);
+        
+        % Aumento de masa del 40% (ej. el paquete es pesado)
+        m_k = m_real(k) * 1.4; 
+        
+        % Cambio asimétrico de inercias ("Geometría extraña")
+        % Simulamos un paquete alargado a lo largo del eje Y
+        Ix_k = Ix_real(k) * 1.2; % Inercia en X sube 20%
+        Iy_k = Iy_real(k) * 1.8; % Inercia en Y sube 80% (Cuesta mucho más cabecear)
+        Iz_k = Iz_real(k) * 1.5; % Inercia en Z sube 50%
 
     else
-
+        
+        % VUELO NOMINAL (t < 10 segundos)
         tau_x_dist = 0.0;
         tau_y_dist = 0.0;
         tau_z_dist = 0.0;
-        m_k = m_real(k);
+        
+        m_k  = m_real(k);
         Ix_k = Ix_real(k); 
         Iy_k = Iy_real(k); 
         Iz_k = Iz_real(k);
